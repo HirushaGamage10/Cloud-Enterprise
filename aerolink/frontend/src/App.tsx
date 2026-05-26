@@ -78,8 +78,8 @@ function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => 
           {error && <div style={{ color: '#ef4444', margin: '10px 0', fontSize: '0.9rem', fontWeight: 600 }}>{error}</div>}
           <button type="submit" className="btn-book btn-auth">Login</button>
           <div style={{ marginTop: '20px' }}>
-            <span style={{ color: 'var(--hero-text)', opacity: 0.8 }}>Don't have an account? </span>
-            <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 800, textDecoration: 'none' }}>Register</Link>
+            <span style={{ color: 'var(--text-main)' }}>Don't have an account? </span>
+            <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Register</Link>
           </div>
         </form>
       </div>
@@ -149,8 +149,8 @@ function RegisterPage() {
           <button type="submit" className="btn-book btn-auth">Register Now</button>
           {success && <div style={{ marginTop: '15px', color: '#10b981', fontWeight: 600 }}>✅ Registration successful!</div>}
           <div style={{ marginTop: '20px' }}>
-            <span style={{ color: 'var(--hero-text)', opacity: 0.8 }}>Already have an account? </span>
-            <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 800, textDecoration: 'none' }}>Login</Link>
+            <span style={{ color: 'var(--text-main)' }}>Already have an account? </span>
+            <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Login</Link>
           </div>
         </form>
       </div>
@@ -268,7 +268,7 @@ function BookingPage({ username }: { username: string }) {
                 <div style={{color: 'var(--text-muted)'}}>{confirmedBooking.flight.toCity}</div>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginTop: '2rem', padding: '1.5rem', background: 'var(--input-bg)', borderRadius: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginTop: '2rem', padding: '1.5rem', background: 'var(--bg-glass)', borderRadius: '8px', border: '1px solid var(--border)' }}>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>PASSENGER</span><div style={{fontWeight:800}}>{confirmedBooking.passenger}</div></div>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>DATE</span><div style={{fontWeight:800}}>{confirmedBooking.date}</div></div>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>SEAT/GATE</span><div style={{fontWeight:800}}>{confirmedBooking.seat} / {confirmedBooking.flight.gate}</div></div>
@@ -326,7 +326,7 @@ function FlightStatusPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {AVAILABLE_FLIGHTS.map(flight => (
-            <div key={flight.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}>
+            <div key={flight.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
                 <div style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--primary)', width: '100px' }}>{flight.code}</div>
                 <div>
@@ -446,7 +446,7 @@ function ProfilePage({ username }: { username: string }) {
             Elite Executive
           </span>
           <div style={{ marginTop: '2.5rem', width: '100%', textAlign: 'left' }}>
-            <div style={{ marginBottom: '1.5rem', background: 'var(--input-bg)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+            <div style={{ marginBottom: '1.5rem', background: 'var(--bg-glass)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border)' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>LOYALTY BALANCE</span>
               <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--primary)' }}>84,300 <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Miles</span></div>
             </div>
@@ -461,7 +461,7 @@ function ProfilePage({ username }: { username: string }) {
           </h3>
           
           {myBookings.length === 0 ? (
-            <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--input-bg)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
               <span style={{ fontSize: '3rem' }}>🌍</span>
               <p style={{ marginTop: '15px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '1.1rem' }}>Your itinerary is empty.</p>
               <Link to="/"><button className="btn-book" style={{ marginTop: '20px' }}>Book a Flight</button></Link>
@@ -469,7 +469,7 @@ function ProfilePage({ username }: { username: string }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {myBookings.map((b: any, index: number) => (
-                <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--input-bg)' }}>
+                <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-glass)' }}>
                   <div>
                     <div style={{ fontWeight: 900, fontSize: '1.3rem' }}>{b.flight.fromCity} ➔ {b.flight.toCity}</div>
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', fontWeight: 600 }}>{b.date} &nbsp;•&nbsp; {b.flight.code} &nbsp;•&nbsp; PNR: <span style={{ color: 'var(--primary)' }}>{b.pnr}</span></div>
