@@ -2,6 +2,12 @@ import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate, Link } from 'react-router-dom';
 import './App.css';
 
+interface User {
+  username: string;
+  password?: string;
+  email?: string;
+}
+
 // Login Page Component
 function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => void }) {
   const [username, setUsername] = useState('');
@@ -11,11 +17,33 @@ function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => 
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username.trim().toLowerCase() === 'passenger' && password === 'password123') {
+    const cleanUsername = username.trim().toLowerCase();
+
+    // Check localStorage for registered users
+    const registeredUsersJson = localStorage.getItem('registered_users');
+    let usersList: User[] = [];
+    if (registeredUsersJson) {
+      try {
+        usersList = JSON.parse(registeredUsersJson);
+      } catch (err) {
+        console.error("Error parsing registered users", err);
+      }
+    }
+
+    // Attempt to match the user in localStorage
+    const matchedUser = usersList.find(
+      (u) => u.username.toLowerCase() === cleanUsername && u.password === password
+    );
+
+    if (matchedUser) {
+      onLogin('mock-jwt-token-12345', matchedUser.username);
+      navigate('/');
+    } else if (cleanUsername === 'passenger' && password === 'password123') {
+      // Fallback default credentials
       onLogin('mock-jwt-token-12345', 'passenger');
       navigate('/');
     } else {
-      setError('Invalid username or password. (Use passenger / password123)');
+      setError('Invalid username or password. (Use passenger / password123, or your registered account)');
     }
   };
 
@@ -65,10 +93,49 @@ function RegisterPage() {
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanUsername = username.trim();
+
+    if (cleanUsername.toLowerCase() === 'passenger') {
+      setError('Cannot register with the reserved username "passenger".');
+      return;
+    }
+
+    // Get existing users
+    const registeredUsersJson = localStorage.getItem('registered_users');
+    let usersList: User[] = [];
+    if (registeredUsersJson) {
+      try {
+        usersList = JSON.parse(registeredUsersJson);
+      } catch (err) {
+        console.error("Error parsing registered users", err);
+      }
+    }
+
+    // Check if user already exists
+    const userExists = usersList.some(
+      (u) => u.username.toLowerCase() === cleanUsername.toLowerCase()
+    );
+
+    if (userExists) {
+      setError('Username already exists. Please choose a different one.');
+      return;
+    }
+
+    // Save new user
+    const newUser: User = {
+      username: cleanUsername,
+      password: password,
+      email: email
+    };
+    usersList.push(newUser);
+    localStorage.setItem('registered_users', JSON.stringify(usersList));
+
+    setError('');
     setSuccess(true);
     setTimeout(() => navigate('/login'), 2000);
   };
@@ -111,6 +178,7 @@ function RegisterPage() {
               required
             />
           </div>
+          {error && <div style={{ color: '#ef4444', marginBottom: '10px', fontSize: '0.9rem', fontWeight: 600 }}>{error}</div>}
           <button type="submit" className="btn-primary" style={{ width: '100%' }}>Register Account</button>
           
           {success && (
