@@ -52,7 +52,7 @@ function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => 
 
   return (
     <div className="auth-container">
-      <div className="auth-card glass-panel animate-fade-up">
+      <div className="auth-card solid-panel animate-fade-up">
         <h3>Passenger Login</h3>
         <form onSubmit={handleLogin}>
           <input type="text" className="input-flat" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
@@ -66,8 +66,12 @@ function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => 
               onChange={(e) => setPassword(e.target.value)} 
               required 
             />
-            <button type="button" className="eye-icon-btn" onClick={() => setShowPassword(!showPassword)}>
-              {showPassword ? "👁️" : "👁️‍🗨️"}
+            <button type="button" className="eye-icon-btn" onClick={() => setShowPassword(!showPassword)} title="Toggle Password Visibility">
+              {showPassword ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              )}
             </button>
           </div>
 
@@ -117,7 +121,7 @@ function RegisterPage() {
 
   return (
     <div className="auth-container">
-      <div className="auth-card glass-panel animate-fade-up">
+      <div className="auth-card solid-panel animate-fade-up">
         <h3>Create Account</h3>
         <form onSubmit={handleRegister}>
           <input type="email" className="input-flat" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -132,8 +136,12 @@ function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)} 
               required 
             />
-            <button type="button" className="eye-icon-btn" onClick={() => setShowPassword(!showPassword)}>
-              {showPassword ? "👁️" : "👁️‍🗨️"}
+            <button type="button" className="eye-icon-btn" onClick={() => setShowPassword(!showPassword)} title="Toggle Password Visibility">
+              {showPassword ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              )}
             </button>
           </div>
 
@@ -310,7 +318,7 @@ function FlightStatusPage() {
         <p>Real-time tracking of global AeroLink arrivals and departures.</p>
       </div>
       
-      <div className="glass-panel" style={{ padding: '3rem' }}>
+      <div className="solid-panel" style={{ padding: '3rem' }}>
         <div style={{ display: 'flex', gap: '20px', marginBottom: '3rem' }}>
           <input type="text" className="input-flat" placeholder="Search by Flight ID or City" />
           <button className="btn-book">Search</button>
@@ -318,7 +326,7 @@ function FlightStatusPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {AVAILABLE_FLIGHTS.map(flight => (
-            <div key={flight.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', background: 'var(--bg-panel)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <div key={flight.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
                 <div style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--primary)', width: '100px' }}>{flight.code}</div>
                 <div>
@@ -367,7 +375,7 @@ function BaggageTrackingPage({ username }: { username: string }) {
         <p>Locate your checked bags globally in real-time.</p>
       </div>
 
-      <div className="glass-panel" style={{ padding: '3rem', maxWidth: '800px', margin: '0 auto' }}>
+      <div className="solid-panel" style={{ padding: '3rem', maxWidth: '800px', margin: '0 auto' }}>
         <form onSubmit={handleTrack} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div>
             <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Baggage Tag Number</label>
@@ -396,7 +404,7 @@ function BaggageTrackingPage({ username }: { username: string }) {
                   const isActive = index <= bagStatus.currentStage;
                   return (
                     <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '90px' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: isActive ? 'var(--primary)' : 'var(--bg-panel)', border: `3px solid ${isActive ? 'var(--primary)' : 'var(--border)'}`, color: isActive ? 'white' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem', boxShadow: isActive ? '0 0 15px rgba(0,82,204,0.4)' : 'none' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: isActive ? 'var(--primary)' : 'var(--bg-main)', border: `3px solid ${isActive ? 'var(--primary)' : 'var(--border)'}`, color: isActive ? 'white' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem', boxShadow: isActive ? '0 0 15px rgba(0,82,204,0.4)' : 'none' }}>
                         {isActive && '✓'}
                       </div>
                       <span style={{ fontSize: '0.8rem', textAlign: 'center', marginTop: '12px', fontWeight: isActive ? 800 : 600, color: isActive ? 'var(--text-main)' : 'var(--text-muted)' }}>{stage}</span>
@@ -431,26 +439,29 @@ function ProfilePage({ username }: { username: string }) {
       </div>
 
       <div className="profile-layout">
-        <div className="glass-panel profile-sidebar">
+        <div className="solid-panel profile-sidebar">
           <div className="avatar-large">{username.substring(0, 2).toUpperCase()}</div>
           <h4 style={{ fontSize: '1.8rem', fontWeight: 900 }}>{username}</h4>
-          <span style={{ display: 'inline-block', padding: '8px 20px', background: 'rgba(255, 215, 0, 0.1)', color: '#b8860b', border: '1px solid rgba(255, 215, 0, 0.4)', borderRadius: '50px', fontWeight: 800, fontSize: '0.85rem', marginTop: '1rem', textTransform: 'uppercase' }}>
+          <span style={{ display: 'inline-block', padding: '8px 20px', background: 'rgba(255, 215, 0, 0.15)', color: '#b8860b', border: '1px solid rgba(255, 215, 0, 0.4)', borderRadius: '50px', fontWeight: 800, fontSize: '0.85rem', marginTop: '1rem', textTransform: 'uppercase' }}>
             Elite Executive
           </span>
           <div style={{ marginTop: '2.5rem', width: '100%', textAlign: 'left' }}>
-            <div style={{ marginBottom: '1rem' }}><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>LOYALTY BALANCE</span><div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--primary)' }}>84,300 <span style={{ fontSize: '1rem', fontWeight: 700 }}>Miles</span></div></div>
-            <div style={{ marginBottom: '1rem' }}><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MEMBER ID</span><div style={{ fontWeight: 700 }}>AL-485763</div></div>
-            <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MEMBER SINCE</span><div style={{ fontWeight: 700 }}>May 2026</div></div>
+            <div style={{ marginBottom: '1.5rem', background: 'var(--bg-main)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>LOYALTY BALANCE</span>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--primary)' }}>84,300 <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Miles</span></div>
+            </div>
+            <div style={{ marginBottom: '1rem', padding: '0 10px' }}><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MEMBER ID</span><div style={{ fontWeight: 700 }}>AL-485763</div></div>
+            <div style={{ padding: '0 10px' }}><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MEMBER SINCE</span><div style={{ fontWeight: 700 }}>May 2026</div></div>
           </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '3rem' }}>
-          <h3 style={{ fontSize: '1.8rem', fontWeight: 900, borderBottom: '2px solid var(--border)', paddingBottom: '1rem', marginBottom: '2rem' }}>
+        <div className="solid-panel" style={{ padding: '3rem' }}>
+          <h3 style={{ fontSize: '1.6rem', fontWeight: 800, borderBottom: '2px solid var(--border)', paddingBottom: '1rem', marginBottom: '2rem' }}>
             Upcoming Trips
           </h3>
           
           {myBookings.length === 0 ? (
-            <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--bg-main)', borderRadius: '12px' }}>
+            <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid var(--border)' }}>
               <span style={{ fontSize: '3rem' }}>🌍</span>
               <p style={{ marginTop: '15px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '1.1rem' }}>Your itinerary is empty.</p>
               <Link to="/"><button className="btn-book" style={{ marginTop: '20px' }}>Book a Flight</button></Link>
@@ -458,9 +469,9 @@ function ProfilePage({ username }: { username: string }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {myBookings.map((b: any, index: number) => (
-                <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-panel)' }}>
+                <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-main)' }}>
                   <div>
-                    <div style={{ fontWeight: 900, fontSize: '1.2rem' }}>{b.flight.fromCity} ➔ {b.flight.toCity}</div>
+                    <div style={{ fontWeight: 900, fontSize: '1.3rem' }}>{b.flight.fromCity} ➔ {b.flight.toCity}</div>
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', fontWeight: 600 }}>{b.date} &nbsp;•&nbsp; {b.flight.code} &nbsp;•&nbsp; PNR: <span style={{ color: 'var(--primary)' }}>{b.pnr}</span></div>
                   </div>
                   <Link to="/baggage"><button className="btn-book" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>Track Bags</button></Link>
@@ -508,51 +519,66 @@ function App() {
 
   return (
     <Router>
-      <div className="app-container">
-        <nav className="navbar">
-          <Link to="/" className="logo">
-            <span className="logo-icon">✈️</span>
-            <h1>AeroLink</h1>
-          </Link>
-          <div className="nav-links">
-            {token ? (
-              <>
-                <NavLink to="/">Book</NavLink>
-                <NavLink to="/flights">Status</NavLink>
-                <NavLink to="/baggage">Baggage</NavLink>
-                <NavLink to="/profile">Profile</NavLink>
-                <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
-                  {theme === 'light' ? '🌙' : '☀️'}
-                </button>
-                <button onClick={handleLogout} className="btn-book" style={{ padding: '10px 24px', fontSize: '0.85rem', marginLeft: '0.5rem', background: 'transparent', border: '2px solid var(--border)', color: 'var(--nav-text)' }}>
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <NavLink to="/flights">Status</NavLink>
-                <NavLink to="/login">Login</NavLink>
-                <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
-                  {theme === 'light' ? '🌙' : '☀️'}
-                </button>
-                <Link to="/register"><button className="btn-book" style={{ padding: '10px 24px', fontSize: '0.85rem', marginLeft: '0.5rem' }}>Register</button></Link>
-              </>
-            )}
-          </div>
-        </nav>
-
-        <main className="main-content">
-          <Routes>
-            <Route path="/login" element={!token ? <LoginPage onLogin={handleLogin} /> : <Navigate to="/" />} />
-            <Route path="/register" element={!token ? <RegisterPage /> : <Navigate to="/" />} />
-            <Route path="/flights" element={<FlightStatusPage />} />
-            <Route path="/baggage" element={token ? <BaggageTrackingPage username={username!} /> : <Navigate to="/login" />} />
-            <Route path="/profile" element={token ? <ProfilePage username={username!} /> : <Navigate to="/login" />} />
-            <Route path="/" element={token ? <BookingPage username={username!} /> : <Navigate to="/login" />} />
-          </Routes>
-        </main>
-      </div>
+      <AppContent token={token} username={username} theme={theme} toggleTheme={toggleTheme} handleLogout={handleLogout} handleLogin={handleLogin} />
     </Router>
+  );
+}
+
+// Wrapped content so we can use useLocation
+function AppContent({ token, username, theme, toggleTheme, handleLogout, handleLogin }: any) {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+  // Auth pages also get the beautiful background
+  const isAuth = location.pathname === '/login' || location.pathname === '/register';
+  const showBackground = isHome || isAuth;
+
+  return (
+    <div className={`app-container ${showBackground ? 'is-home' : 'is-inner'}`}>
+      <nav className="navbar">
+        <Link to="/" className="logo">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={showBackground ? "#ffffff" : "var(--primary)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.7l-1.2 3.3c-.2.5.1 1 .6 1.1l7.4 2.2-3.1 3.1-3.6-.9c-.4-.1-.8.1-1 .5L1.5 19c-.2.3.1.8.5.8l4.6.6 2.6 2.6c.3.3.8.3 1-.1l1.7-2.6c.3-.5 0-.9-.4-1l-1-.2 3.1-3.1 2.2 7.4c.1.5.7.8 1.1.6l3.3-1.2c.5-.2.8-.6.7-1.1z"></path>
+          </svg>
+          <h1>AeroLink</h1>
+        </Link>
+        <div className="nav-links">
+          {token ? (
+            <>
+              <NavLink to="/">Book</NavLink>
+              <NavLink to="/flights">Status</NavLink>
+              <NavLink to="/baggage">Baggage</NavLink>
+              <NavLink to="/profile">Profile</NavLink>
+              <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
+                {theme === 'light' ? '🌙' : '☀️'}
+              </button>
+              <button onClick={handleLogout} className="btn-outline">
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink to="/flights">Status</NavLink>
+              <NavLink to="/login">Login</NavLink>
+              <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
+                {theme === 'light' ? '🌙' : '☀️'}
+              </button>
+              <Link to="/register"><button className="btn-book" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>Register</button></Link>
+            </>
+          )}
+        </div>
+      </nav>
+
+      <main className="main-content">
+        <Routes>
+          <Route path="/login" element={!token ? <LoginPage onLogin={handleLogin} /> : <Navigate to="/" />} />
+          <Route path="/register" element={!token ? <RegisterPage /> : <Navigate to="/" />} />
+          <Route path="/flights" element={<FlightStatusPage />} />
+          <Route path="/baggage" element={token ? <BaggageTrackingPage username={username!} /> : <Navigate to="/login" />} />
+          <Route path="/profile" element={token ? <ProfilePage username={username!} /> : <Navigate to="/login" />} />
+          <Route path="/" element={token ? <BookingPage username={username!} /> : <Navigate to="/login" />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
 
