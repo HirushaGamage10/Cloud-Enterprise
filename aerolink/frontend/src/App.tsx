@@ -535,7 +535,7 @@ function App() {
                 <NavLink to="/baggage">Baggage</NavLink>
                 <NavLink to="/profile">Profile</NavLink>
                 <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
-                  {theme === 'light' ? '🌙' : '☀️'}
+                  {theme === 'light' ? '☀️' : '🌙'}
                 </button>
                 <button onClick={handleLogout} className="btn-outline">
                   Logout
@@ -546,7 +546,7 @@ function App() {
                 <NavLink to="/flights">Status</NavLink>
                 <NavLink to="/login">Login</NavLink>
                 <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
-                  {theme === 'light' ? '🌙' : '☀️'}
+                  {theme === 'light' ? '☀️' : '🌙'}
                 </button>
                 <Link to="/register"><button className="btn-book" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>Register</button></Link>
               </>
