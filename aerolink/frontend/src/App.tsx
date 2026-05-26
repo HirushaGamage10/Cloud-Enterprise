@@ -66,16 +66,20 @@ function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => 
               onChange={(e) => setPassword(e.target.value)} 
               required 
             />
-            <button type="button" className="eye-icon-btn" onClick={() => setShowPassword(!showPassword)}>
-              {showPassword ? "👁️" : "👁️‍🗨️"}
+            <button type="button" className="eye-icon-btn" onClick={() => setShowPassword(!showPassword)} title="Toggle Password Visibility">
+              {showPassword ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              )}
             </button>
           </div>
 
           {error && <div style={{ color: '#ef4444', margin: '10px 0', fontSize: '0.9rem', fontWeight: 600 }}>{error}</div>}
           <button type="submit" className="btn-book btn-auth">Login</button>
           <div style={{ marginTop: '20px' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
-            <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Register</Link>
+            <span style={{ color: 'var(--hero-text)', opacity: 0.8 }}>Don't have an account? </span>
+            <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 800, textDecoration: 'none' }}>Register</Link>
           </div>
         </form>
       </div>
@@ -132,8 +136,12 @@ function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)} 
               required 
             />
-            <button type="button" className="eye-icon-btn" onClick={() => setShowPassword(!showPassword)}>
-              {showPassword ? "👁️" : "👁️‍🗨️"}
+            <button type="button" className="eye-icon-btn" onClick={() => setShowPassword(!showPassword)} title="Toggle Password Visibility">
+              {showPassword ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              )}
             </button>
           </div>
 
@@ -141,8 +149,8 @@ function RegisterPage() {
           <button type="submit" className="btn-book btn-auth">Register Now</button>
           {success && <div style={{ marginTop: '15px', color: '#10b981', fontWeight: 600 }}>✅ Registration successful!</div>}
           <div style={{ marginTop: '20px' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Already have an account? </span>
-            <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Login</Link>
+            <span style={{ color: 'var(--hero-text)', opacity: 0.8 }}>Already have an account? </span>
+            <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 800, textDecoration: 'none' }}>Login</Link>
           </div>
         </form>
       </div>
@@ -185,33 +193,18 @@ function BookingPage({ username }: { username: string }) {
     setStatus('loading');
     setTimeout(() => {
       setStatus('success');
-      const newBaggageId = `BAG-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       const mockBooking = {
         passenger: username,
         flight: selectedFlight,
         date: travelDate || new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0],
         cabin: cabinClass,
         seat: `${Math.floor(Math.random() * 30) + 1}${['A', 'B', 'C', 'D', 'F'][Math.floor(Math.random() * 5)]}`,
-        pnr: Math.random().toString(36).substring(2, 8).toUpperCase(),
-        baggageId: newBaggageId
+        pnr: Math.random().toString(36).substring(2, 8).toUpperCase()
       };
       setConfirmedBooking(mockBooking);
       const existingBookings = JSON.parse(localStorage.getItem(`bookings_${username}`) || '[]');
       existingBookings.push(mockBooking);
       localStorage.setItem(`bookings_${username}`, JSON.stringify(existingBookings));
-
-      // Save baggage to global mock database
-      const allBaggages = JSON.parse(localStorage.getItem('baggage_db') || '{}');
-      allBaggages[newBaggageId] = {
-        id: newBaggageId,
-        passenger: username,
-        flight: selectedFlight?.code,
-        weight: `${(Math.random() * 15 + 10).toFixed(1)} kg`,
-        currentStage: 0,
-        lastUpdate: new Date().toLocaleTimeString(),
-        location: `${selectedFlight?.fromCode} - Terminal Check-in`
-      };
-      localStorage.setItem('baggage_db', JSON.stringify(allBaggages));
     }, 1200);
   };
 
@@ -275,7 +268,7 @@ function BookingPage({ username }: { username: string }) {
                 <div style={{color: 'var(--text-muted)'}}>{confirmedBooking.flight.toCity}</div>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginTop: '2rem', padding: '1.5rem', background: 'var(--bg-main)', borderRadius: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginTop: '2rem', padding: '1.5rem', background: 'var(--input-bg)', borderRadius: '8px' }}>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>PASSENGER</span><div style={{fontWeight:800}}>{confirmedBooking.passenger}</div></div>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>DATE</span><div style={{fontWeight:800}}>{confirmedBooking.date}</div></div>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>SEAT/GATE</span><div style={{fontWeight:800}}>{confirmedBooking.seat} / {confirmedBooking.flight.gate}</div></div>
@@ -333,7 +326,7 @@ function FlightStatusPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {AVAILABLE_FLIGHTS.map(flight => (
-            <div key={flight.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', background: 'var(--bg-panel)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <div key={flight.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}>
               <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
                 <div style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--primary)', width: '100px' }}>{flight.code}</div>
                 <div>
@@ -356,28 +349,19 @@ function FlightStatusPage() {
 // BAGGAGE TRACKING PAGE
 // ----------------------------------------------------------------------
 
-function BaggageTrackingPage() {
+function BaggageTrackingPage({ username }: { username: string }) {
   const [baggageId, setBaggageId] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [bagStatus, setBagStatus] = useState<any>(null);
-  const [errorMsg, setErrorMsg] = useState('');
 
   const handleTrack = (e: React.FormEvent) => {
     e.preventDefault();
     if (!baggageId) return;
     setIsSearching(true);
-    setErrorMsg('');
-    setBagStatus(null);
-    
     setTimeout(() => {
-      const allBaggages = JSON.parse(localStorage.getItem('baggage_db') || '{}');
-      const foundBag = allBaggages[baggageId.toUpperCase()];
-      
-      if (foundBag) {
-        setBagStatus(foundBag);
-      } else {
-        setErrorMsg('Baggage tag not found in system. Please verify your BAG-XXXXXX number.');
-      }
+      setBagStatus({
+        id: baggageId.toUpperCase(), passenger: username, flight: 'AL-101', weight: '23.4 kg', currentStage: 2, lastUpdate: new Date().toLocaleTimeString(), location: 'LHR - Terminal 5 Sorting'
+      });
       setIsSearching(false);
     }, 1000);
   };
@@ -398,15 +382,9 @@ function BaggageTrackingPage() {
             <input type="text" className="input-flat" placeholder="e.g. BAG-889922" value={baggageId} onChange={(e) => setBaggageId(e.target.value)} required />
           </div>
           <button type="submit" className="btn-book" disabled={isSearching} style={{ width: '100%' }}>
-            {isSearching ? 'Locating in Database...' : 'Track Luggage'}
+            {isSearching ? 'Locating...' : 'Track Luggage'}
           </button>
         </form>
-
-        {errorMsg && (
-          <div style={{ marginTop: '20px', padding: '15px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', fontWeight: 600, textAlign: 'center' }}>
-            {errorMsg}
-          </div>
-        )}
 
         {bagStatus && (
           <div className="animate-fade-up delay-1" style={{ marginTop: '3rem', borderTop: '2px solid var(--border)', paddingTop: '3rem' }}>
@@ -426,7 +404,7 @@ function BaggageTrackingPage() {
                   const isActive = index <= bagStatus.currentStage;
                   return (
                     <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '90px' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: isActive ? 'var(--primary)' : 'var(--bg-panel)', border: `3px solid ${isActive ? 'var(--primary)' : 'var(--border)'}`, color: isActive ? 'white' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem', boxShadow: isActive ? '0 0 15px rgba(0,82,204,0.4)' : 'none' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: isActive ? 'var(--primary)' : 'var(--bg-glass)', border: `3px solid ${isActive ? 'var(--primary)' : 'var(--border)'}`, color: isActive ? 'white' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem', boxShadow: isActive ? '0 0 15px rgba(0,82,204,0.4)' : 'none' }}>
                         {isActive && '✓'}
                       </div>
                       <span style={{ fontSize: '0.8rem', textAlign: 'center', marginTop: '12px', fontWeight: isActive ? 800 : 600, color: isActive ? 'var(--text-main)' : 'var(--text-muted)' }}>{stage}</span>
@@ -464,23 +442,26 @@ function ProfilePage({ username }: { username: string }) {
         <div className="glass-panel profile-sidebar">
           <div className="avatar-large">{username.substring(0, 2).toUpperCase()}</div>
           <h4 style={{ fontSize: '1.8rem', fontWeight: 900 }}>{username}</h4>
-          <span style={{ display: 'inline-block', padding: '8px 20px', background: 'rgba(255, 215, 0, 0.1)', color: '#b8860b', border: '1px solid rgba(255, 215, 0, 0.4)', borderRadius: '50px', fontWeight: 800, fontSize: '0.85rem', marginTop: '1rem', textTransform: 'uppercase' }}>
+          <span style={{ display: 'inline-block', padding: '8px 20px', background: 'rgba(255, 215, 0, 0.15)', color: '#b8860b', border: '1px solid rgba(255, 215, 0, 0.4)', borderRadius: '50px', fontWeight: 800, fontSize: '0.85rem', marginTop: '1rem', textTransform: 'uppercase' }}>
             Elite Executive
           </span>
           <div style={{ marginTop: '2.5rem', width: '100%', textAlign: 'left' }}>
-            <div style={{ marginBottom: '1rem' }}><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>LOYALTY BALANCE</span><div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--primary)' }}>84,300 <span style={{ fontSize: '1rem', fontWeight: 700 }}>Miles</span></div></div>
-            <div style={{ marginBottom: '1rem' }}><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MEMBER ID</span><div style={{ fontWeight: 700 }}>AL-485763</div></div>
-            <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MEMBER SINCE</span><div style={{ fontWeight: 700 }}>May 2026</div></div>
+            <div style={{ marginBottom: '1.5rem', background: 'var(--input-bg)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>LOYALTY BALANCE</span>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--primary)' }}>84,300 <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Miles</span></div>
+            </div>
+            <div style={{ marginBottom: '1rem', padding: '0 10px' }}><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MEMBER ID</span><div style={{ fontWeight: 700 }}>AL-485763</div></div>
+            <div style={{ padding: '0 10px' }}><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MEMBER SINCE</span><div style={{ fontWeight: 700 }}>May 2026</div></div>
           </div>
         </div>
 
         <div className="glass-panel" style={{ padding: '3rem' }}>
-          <h3 style={{ fontSize: '1.8rem', fontWeight: 900, borderBottom: '2px solid var(--border)', paddingBottom: '1rem', marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1.6rem', fontWeight: 800, borderBottom: '2px solid var(--border)', paddingBottom: '1rem', marginBottom: '2rem' }}>
             Upcoming Trips
           </h3>
           
           {myBookings.length === 0 ? (
-            <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--bg-main)', borderRadius: '12px' }}>
+            <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--input-bg)', borderRadius: '12px', border: '1px solid var(--border)' }}>
               <span style={{ fontSize: '3rem' }}>🌍</span>
               <p style={{ marginTop: '15px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '1.1rem' }}>Your itinerary is empty.</p>
               <Link to="/"><button className="btn-book" style={{ marginTop: '20px' }}>Book a Flight</button></Link>
@@ -488,9 +469,9 @@ function ProfilePage({ username }: { username: string }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {myBookings.map((b: any, index: number) => (
-                <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-panel)' }}>
+                <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--input-bg)' }}>
                   <div>
-                    <div style={{ fontWeight: 900, fontSize: '1.2rem' }}>{b.flight.fromCity} ➔ {b.flight.toCity}</div>
+                    <div style={{ fontWeight: 900, fontSize: '1.3rem' }}>{b.flight.fromCity} ➔ {b.flight.toCity}</div>
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', fontWeight: 600 }}>{b.date} &nbsp;•&nbsp; {b.flight.code} &nbsp;•&nbsp; PNR: <span style={{ color: 'var(--primary)' }}>{b.pnr}</span></div>
                   </div>
                   <Link to="/baggage"><button className="btn-book" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>Track Bags</button></Link>
@@ -541,7 +522,9 @@ function App() {
       <div className="app-container">
         <nav className="navbar">
           <Link to="/" className="logo">
-            <span className="logo-icon">✈️</span>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.7l-1.2 3.3c-.2.5.1 1 .6 1.1l7.4 2.2-3.1 3.1-3.6-.9c-.4-.1-.8.1-1 .5L1.5 19c-.2.3.1.8.5.8l4.6.6 2.6 2.6c.3.3.8.3 1-.1l1.7-2.6c.3-.5 0-.9-.4-1l-1-.2 3.1-3.1 2.2 7.4c.1.5.7.8 1.1.6l3.3-1.2c.5-.2.8-.6.7-1.1z"></path>
+            </svg>
             <h1>AeroLink</h1>
           </Link>
           <div className="nav-links">
@@ -554,7 +537,7 @@ function App() {
                 <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
                   {theme === 'light' ? '🌙' : '☀️'}
                 </button>
-                <button onClick={handleLogout} className="btn-book" style={{ padding: '10px 24px', fontSize: '0.85rem', marginLeft: '0.5rem', background: 'transparent', border: '2px solid var(--border)', color: 'var(--nav-text)' }}>
+                <button onClick={handleLogout} className="btn-outline">
                   Logout
                 </button>
               </>
@@ -565,7 +548,7 @@ function App() {
                 <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
                   {theme === 'light' ? '🌙' : '☀️'}
                 </button>
-                <Link to="/register"><button className="btn-book" style={{ padding: '10px 24px', fontSize: '0.85rem', marginLeft: '0.5rem' }}>Register</button></Link>
+                <Link to="/register"><button className="btn-book" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>Register</button></Link>
               </>
             )}
           </div>
@@ -576,7 +559,7 @@ function App() {
             <Route path="/login" element={!token ? <LoginPage onLogin={handleLogin} /> : <Navigate to="/" />} />
             <Route path="/register" element={!token ? <RegisterPage /> : <Navigate to="/" />} />
             <Route path="/flights" element={<FlightStatusPage />} />
-            <Route path="/baggage" element={token ? <BaggageTrackingPage /> : <Navigate to="/login" />} />
+            <Route path="/baggage" element={token ? <BaggageTrackingPage username={username!} /> : <Navigate to="/login" />} />
             <Route path="/profile" element={token ? <ProfilePage username={username!} /> : <Navigate to="/login" />} />
             <Route path="/" element={token ? <BookingPage username={username!} /> : <Navigate to="/login" />} />
           </Routes>
