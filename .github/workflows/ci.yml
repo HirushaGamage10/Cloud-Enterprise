@@ -1,0 +1,32 @@
+name: AeroLink CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Booking Service
+        run: |
+          cd aerolink/backend/booking-service
+          docker build -t aerolink/booking-service:latest .
+          
+      - name: Build Flight Service
+        run: |
+          cd aerolink/backend/flight-service
+          docker build -t aerolink/flight-service:latest .
+
+      - name: Build Baggage Service
+        run: |
+          cd aerolink/backend/baggage-service
+          docker build -t aerolink/baggage-service:latest .
