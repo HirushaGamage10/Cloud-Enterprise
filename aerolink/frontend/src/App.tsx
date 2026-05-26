@@ -162,12 +162,19 @@ function RegisterPage() {
 // MOCK DATA
 // ----------------------------------------------------------------------
 
-const AVAILABLE_FLIGHTS = [
-  { id: 'AL-101', code: 'AL-101', fromCode: 'LHR', fromCity: 'London', toCode: 'JFK', toCity: 'New York', duration: '8h 05m', status: 'On Time', gate: 'G4', time: '10:30 AM' },
-  { id: 'AL-204', code: 'AL-204', fromCode: 'CDG', fromCity: 'Paris', toCode: 'HND', toCity: 'Tokyo', duration: '12h 40m', status: 'Boarding', gate: 'F12', time: '12:15 PM' },
-  { id: 'AL-309', code: 'AL-309', fromCode: 'SIN', fromCity: 'Singapore', toCode: 'SYD', toCity: 'Sydney', duration: '7h 55m', status: 'Delayed', gate: 'T2', time: '14:45 PM' },
-  { id: 'AL-512', code: 'AL-512', fromCode: 'DXB', fromCity: 'Dubai', toCode: 'LHR', toCity: 'London', duration: '7h 15m', status: 'In Air', gate: 'A1', time: '08:00 AM' }
+const INITIAL_FLIGHTS = [
+  { id: 'AL-101', code: 'AL-101', fromCode: 'LHR', fromCity: 'London', toCode: 'JFK', toCity: 'New York', duration: '8h 05m', status: 'On Time', gate: 'G4', time: '10:30 AM', seats: 150 },
+  { id: 'AL-204', code: 'AL-204', fromCode: 'CDG', fromCity: 'Paris', toCode: 'HND', toCity: 'Tokyo', duration: '12h 40m', status: 'Boarding', gate: 'F12', time: '12:15 PM', seats: 45 },
+  { id: 'AL-309', code: 'AL-309', fromCode: 'SIN', fromCity: 'Singapore', toCode: 'SYD', toCity: 'Sydney', duration: '7h 55m', status: 'Delayed', gate: 'T2', time: '14:45 PM', seats: 8 },
+  { id: 'AL-512', code: 'AL-512', fromCode: 'DXB', fromCity: 'Dubai', toCode: 'LHR', toCity: 'London', duration: '7h 15m', status: 'In Air', gate: 'A1', time: '08:00 AM', seats: 210 }
 ];
+
+const getFlightsDatabase = () => {
+  const db = localStorage.getItem('database_flights');
+  if (db) return JSON.parse(db);
+  localStorage.setItem('database_flights', JSON.stringify(INITIAL_FLIGHTS));
+  return INITIAL_FLIGHTS;
+};
 
 const DESTINATIONS = [
   { title: "Venice, Italy", rating: 4.8, img: "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
@@ -180,13 +187,20 @@ const DESTINATIONS = [
 // ----------------------------------------------------------------------
 
 function BookingPage({ username }: { username: string }) {
-  const [selectedFlightId, setSelectedFlightId] = useState(AVAILABLE_FLIGHTS[0].id);
+  const [flights, setFlights] = useState<any[]>([]);
+  const [selectedFlightId, setSelectedFlightId] = useState('');
+
+  useEffect(() => {
+    const dbFlights = getFlightsDatabase();
+    setFlights(dbFlights);
+    if (dbFlights.length > 0) setSelectedFlightId(dbFlights[0].id);
+  }, []);
   const [travelDate, setTravelDate] = useState('');
   const [cabinClass, setCabinClass] = useState('Economy');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
   const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
 
-  const selectedFlight = AVAILABLE_FLIGHTS.find(f => f.id === selectedFlightId);
+  const selectedFlight = flights.find(f => f.id === selectedFlightId);
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,6 +221,17 @@ function BookingPage({ username }: { username: string }) {
       const existingBookings = JSON.parse(localStorage.getItem(`bookings_${username}`) || '[]');
       existingBookings.push(mockBooking);
       localStorage.setItem(`bookings_${username}`, JSON.stringify(existingBookings));
+
+      // Update flight database to reduce available seats
+      const updatedFlights = flights.map(f => {
+        if (f.id === selectedFlight.id) {
+          return { ...f, seats: f.seats > 0 ? f.seats - 1 : 0 };
+        }
+        return f;
+      });
+      localStorage.setItem('database_flights', JSON.stringify(updatedFlights));
+      setFlights(updatedFlights);
+
     }, 1200);
   };
 
@@ -222,9 +247,9 @@ function BookingPage({ username }: { username: string }) {
           <div className="form-group-horiz">
             <label>Route</label>
             <select className="input-flat" value={selectedFlightId} onChange={(e) => setSelectedFlightId(e.target.value)}>
-              {AVAILABLE_FLIGHTS.map((flight) => (
+              {flights.map((flight) => (
                 <option key={flight.id} value={flight.id}>
-                  {flight.fromCity} ➔ {flight.toCity}
+                  {flight.fromCity} ➔ {flight.toCity} ({flight.seats} seats left)
                 </option>
               ))}
             </select>
@@ -304,6 +329,12 @@ function BookingPage({ username }: { username: string }) {
 // ----------------------------------------------------------------------
 
 function FlightStatusPage() {
+  const [flights, setFlights] = useState<any[]>([]);
+
+  useEffect(() => {
+    setFlights(getFlightsDatabase());
+  }, []);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'On Time': return '#10b981';
@@ -328,13 +359,13 @@ function FlightStatusPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {AVAILABLE_FLIGHTS.map(flight => (
+          {flights.map(flight => (
             <div key={flight.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
                 <div style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--primary)', width: '100px' }}>{flight.code}</div>
                 <div>
                   <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-main)' }}>{flight.fromCity} ➔ {flight.toCity}</div>
-                  <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '5px', fontWeight: 600 }}>Scheduled: {flight.time} &nbsp;|&nbsp; Gate: {flight.gate}</div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '5px', fontWeight: 600 }}>Scheduled: {flight.time} &nbsp;|&nbsp; Gate: {flight.gate} &nbsp;|&nbsp; Seats: {flight.seats}</div>
                 </div>
               </div>
               <div style={{ padding: '8px 20px', borderRadius: '50px', fontSize: '0.9rem', fontWeight: 800, backgroundColor: `${getStatusColor(flight.status)}15`, color: getStatusColor(flight.status) }}>
