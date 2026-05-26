@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate, Link } from 'react-router-dom';
 import './App.css';
 
 // Login Page Component
@@ -11,17 +11,16 @@ function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => 
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === 'passenger' && password === 'password123') {
-      // Mocking JWT returned from our /auth/login endpoint
-      onLogin('mock-jwt-token-12345', username);
+    if (username.trim().toLowerCase() === 'passenger' && password === 'password123') {
+      onLogin('mock-jwt-token-12345', 'passenger');
       navigate('/');
     } else {
-      setError('Invalid username or password');
+      setError('Invalid username or password. (Use passenger / password123)');
     }
   };
 
   return (
-    <div className="hero-section animate-fade-in" style={{ padding: '40px' }}>
+    <div className="hero-section animate-fade-in" style={{ padding: '20px 0' }}>
       <div className="booking-card glass-panel" style={{ maxWidth: '400px', margin: '0 auto' }}>
         <h3>Passenger Login</h3>
         <form onSubmit={handleLogin} className="booking-form">
@@ -47,12 +46,12 @@ function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => 
               required
             />
           </div>
-          {error && <div style={{ color: '#ef4444', marginBottom: '10px' }}>{error}</div>}
+          {error && <div style={{ color: '#ef4444', marginBottom: '10px', fontSize: '0.9rem', fontWeight: 600 }}>{error}</div>}
           <button type="submit" className="btn-primary" style={{ width: '100%' }}>Login</button>
           
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
             <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
-            <a href="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>Register here</a>
+            <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>Register here</Link>
           </div>
         </form>
       </div>
@@ -70,13 +69,12 @@ function RegisterPage() {
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate registration
     setSuccess(true);
     setTimeout(() => navigate('/login'), 2000);
   };
 
   return (
-    <div className="hero-section animate-fade-in" style={{ padding: '40px' }}>
+    <div className="hero-section animate-fade-in" style={{ padding: '20px 0' }}>
       <div className="booking-card glass-panel" style={{ maxWidth: '400px', margin: '0 auto' }}>
         <h3>Create Passenger Account</h3>
         <form onSubmit={handleRegister} className="booking-form">
@@ -123,7 +121,7 @@ function RegisterPage() {
 
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
             <span style={{ color: 'var(--text-muted)' }}>Already have an account? </span>
-            <a href="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>Login here</a>
+            <Link to="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>Login here</Link>
           </div>
         </form>
       </div>
@@ -215,23 +213,23 @@ function App() {
     <Router>
       <div className="app-container">
         <nav className="navbar glass-panel">
-          <div className="logo" style={{ cursor: 'pointer' }} onClick={() => window.location.href = '/'}>
+          <Link to="/" className="logo">
             <span className="logo-icon">✈️</span>
             <h1>AeroLink</h1>
-          </div>
+          </Link>
           <div className="nav-links">
             {token ? (
               <>
                 <a href="#">Flights</a>
                 <a href="#">Manage</a>
-                <button onClick={handleLogout} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+                <button onClick={handleLogout} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem', width: 'auto' }}>
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <a href="/login">Login</a>
-                <a href="/register">Register</a>
+                <Link to="/login">Login</Link>
+                <Link to="/register">Register</Link>
               </>
             )}
           </div>
