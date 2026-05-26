@@ -24,3 +24,11 @@ module "api" {
   source      = "./modules/api"
   environment = var.environment
 }
+
+module "frontend" {
+  source = "./modules/frontend"
+}
+
+module "ecr" {
+  source = "./modules/ecr"
+}

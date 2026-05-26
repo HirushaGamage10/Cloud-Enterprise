@@ -13,3 +13,10 @@ output "aurora_cluster_endpoint" {
 output "api_gateway_endpoint" {
   value = module.api.api_endpoint
 }
+
+output "frontend_s3_url" {
+  value = module.frontend.website_endpoint
+}
+output "ecr_booking_repo" {
+  value = module.ecr.booking_repo_url
+}

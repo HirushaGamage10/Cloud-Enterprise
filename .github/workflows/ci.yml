@@ -1,32 +1,142 @@
-name: AeroLink CI/CD Pipeline
+name: AeroLink Enterprise CI/CD Pipeline
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+
+env:
+  AWS_REGION: eu-west-1
 
 jobs:
-  build-and-test:
+  build-and-deploy-frontend:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: Build Booking Service
+      - name: Build Frontend
+        working-directory: aerolink/frontend
         run: |
-          cd aerolink/backend/booking-service
-          docker build -t aerolink/booking-service:latest .
+          npm install
+          npm run build
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        working-directory: aerolink/frontend
+        run: |
+          # Automatically find the deployed S3 bucket name that starts with aerolink-frontend-
+          BUCKET_NAME=$(aws s3api list-buckets --query "Buckets[?starts_with(Name, 'aerolink-frontend-')].Name" --output text)
+          if [ -z "$BUCKET_NAME" ]; then
+            echo "Error: S3 bucket not found"
+            exit 1
+          fi
+          echo "Deploying to S3 bucket: $BUCKET_NAME"
+          aws s3 sync dist/ s3://$BUCKET_NAME/ --delete
+
+  build-and-push-backend:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.commit.outputs.short_sha }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Get Commit SHA for Tag
+        id: commit
+        run: echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Booking Service
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: aerolink-booking-service
+          IMAGE_TAG: ${{ steps.commit.outputs.short_sha }}
+        working-directory: aerolink/backend/booking-service
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Build and Push Flight Service
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: aerolink-flight-service
+          IMAGE_TAG: ${{ steps.commit.outputs.short_sha }}
+        working-directory: aerolink/backend/flight-service
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Build and Push Baggage Service
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: aerolink-baggage-service
+          IMAGE_TAG: ${{ steps.commit.outputs.short_sha }}
+        working-directory: aerolink/backend/baggage-service
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+  update-gitops-manifests:
+    needs: build-and-push-backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS Credentials to get Account ID
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update Kubernetes Manifests
+        env:
+          IMAGE_TAG: ${{ needs.build-and-push-backend.outputs.image_tag }}
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          ECR_URL="$ACCOUNT_ID.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           
-      - name: Build Flight Service
-        run: |
-          cd aerolink/backend/flight-service
-          docker build -t aerolink/flight-service:latest .
+          cd aerolink/backend/k8s
+          
+          # Use sed to update the image tags in the deployment yaml files
+          sed -i "s|image: .*aerolink-booking-service.*|image: $ECR_URL/aerolink-booking-service:$IMAGE_TAG|g" booking-service.yaml
+          sed -i "s|image: .*aerolink-flight-service.*|image: $ECR_URL/aerolink-flight-service:$IMAGE_TAG|g" flight-service.yaml
+          sed -i "s|image: .*aerolink-baggage-service.*|image: $ECR_URL/aerolink-baggage-service:$IMAGE_TAG|g" baggage-service.yaml
 
-      - name: Build Baggage Service
+      - name: Commit and Push Changes to Trigger ArgoCD
         run: |
-          cd aerolink/backend/baggage-service
-          docker build -t aerolink/baggage-service:latest .
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add aerolink/backend/k8s/*.yaml
+          
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(gitops): update image tags to ${{ needs.build-and-push-backend.outputs.image_tag }}"
+            git push
+          fi
