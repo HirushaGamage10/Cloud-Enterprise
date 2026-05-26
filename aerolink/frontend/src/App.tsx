@@ -193,13 +193,15 @@ function BookingPage({ username }: { username: string }) {
     setStatus('loading');
     setTimeout(() => {
       setStatus('success');
+      const pnr = Math.random().toString(36).substring(2, 8).toUpperCase();
       const mockBooking = {
         passenger: username,
         flight: selectedFlight,
         date: travelDate || new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0],
         cabin: cabinClass,
         seat: `${Math.floor(Math.random() * 30) + 1}${['A', 'B', 'C', 'D', 'F'][Math.floor(Math.random() * 5)]}`,
-        pnr: Math.random().toString(36).substring(2, 8).toUpperCase()
+        pnr: pnr,
+        baggageId: `BAG-${pnr}`
       };
       setConfirmedBooking(mockBooking);
       const existingBookings = JSON.parse(localStorage.getItem(`bookings_${username}`) || '[]');
@@ -268,11 +270,12 @@ function BookingPage({ username }: { username: string }) {
                 <div style={{color: 'var(--text-muted)'}}>{confirmedBooking.flight.toCity}</div>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginTop: '2rem', padding: '1.5rem', background: 'var(--bg-glass)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '15px', marginTop: '2rem', padding: '1.5rem', background: 'var(--bg-glass)', borderRadius: '8px', border: '1px solid var(--border)' }}>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>PASSENGER</span><div style={{fontWeight:800}}>{confirmedBooking.passenger}</div></div>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>DATE</span><div style={{fontWeight:800}}>{confirmedBooking.date}</div></div>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>SEAT/GATE</span><div style={{fontWeight:800}}>{confirmedBooking.seat} / {confirmedBooking.flight.gate}</div></div>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>PNR</span><div style={{fontWeight:800}}>{confirmedBooking.pnr}</div></div>
+              <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>BAGGAGE ID</span><div style={{fontWeight:800, color:'var(--primary)'}}>{confirmedBooking.baggageId}</div></div>
             </div>
           </div>
         )}
@@ -349,19 +352,46 @@ function FlightStatusPage() {
 // BAGGAGE TRACKING PAGE
 // ----------------------------------------------------------------------
 
-function BaggageTrackingPage({ username }: { username: string }) {
+function BaggageTrackingPage() {
   const [baggageId, setBaggageId] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [bagStatus, setBagStatus] = useState<any>(null);
+  const [error, setError] = useState('');
 
   const handleTrack = (e: React.FormEvent) => {
     e.preventDefault();
     if (!baggageId) return;
     setIsSearching(true);
+    setError('');
+    setBagStatus(null);
+
     setTimeout(() => {
-      setBagStatus({
-        id: baggageId.toUpperCase(), passenger: username, flight: 'AL-101', weight: '23.4 kg', currentStage: 2, lastUpdate: new Date().toLocaleTimeString(), location: 'LHR - Terminal 5 Sorting'
-      });
+      let foundBooking = null;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('bookings_')) {
+          const userBookings = JSON.parse(localStorage.getItem(key) || '[]');
+          const booking = userBookings.find((b: any) => b.baggageId === baggageId.toUpperCase());
+          if (booking) {
+            foundBooking = booking;
+            break;
+          }
+        }
+      }
+
+      if (foundBooking) {
+        setBagStatus({
+          id: foundBooking.baggageId, 
+          passenger: foundBooking.passenger, 
+          flight: foundBooking.flight.code, 
+          weight: `${(Math.random() * 10 + 15).toFixed(1)} kg`, 
+          currentStage: Math.floor(Math.random() * 4), 
+          lastUpdate: new Date().toLocaleTimeString(), 
+          location: `${foundBooking.flight.fromCode} - Terminal Sorting`
+        });
+      } else {
+        setError('Baggage ID not found in database. Please check your tag.');
+      }
       setIsSearching(false);
     }, 1000);
   };
@@ -379,8 +409,9 @@ function BaggageTrackingPage({ username }: { username: string }) {
         <form onSubmit={handleTrack} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div>
             <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Baggage Tag Number</label>
-            <input type="text" className="input-flat" placeholder="e.g. BAG-889922" value={baggageId} onChange={(e) => setBaggageId(e.target.value)} required />
+            <input type="text" className="input-flat" placeholder="e.g. BAG-X7Y8Z9" value={baggageId} onChange={(e) => setBaggageId(e.target.value)} required />
           </div>
+          {error && <div style={{ color: '#ef4444', fontWeight: 600, fontSize: '0.95rem' }}>{error}</div>}
           <button type="submit" className="btn-book" disabled={isSearching} style={{ width: '100%' }}>
             {isSearching ? 'Locating...' : 'Track Luggage'}
           </button>
@@ -473,6 +504,7 @@ function ProfilePage({ username }: { username: string }) {
                   <div>
                     <div style={{ fontWeight: 900, fontSize: '1.3rem' }}>{b.flight.fromCity} ➔ {b.flight.toCity}</div>
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', fontWeight: 600 }}>{b.date} &nbsp;•&nbsp; {b.flight.code} &nbsp;•&nbsp; PNR: <span style={{ color: 'var(--primary)' }}>{b.pnr}</span></div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px', fontWeight: 700 }}>Baggage ID: <span style={{ color: 'var(--text-main)' }}>{b.baggageId || `BAG-${b.pnr}`}</span></div>
                   </div>
                   <Link to="/baggage"><button className="btn-book" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>Track Bags</button></Link>
                 </div>
@@ -559,7 +591,7 @@ function App() {
             <Route path="/login" element={!token ? <LoginPage onLogin={handleLogin} /> : <Navigate to="/" />} />
             <Route path="/register" element={!token ? <RegisterPage /> : <Navigate to="/" />} />
             <Route path="/flights" element={<FlightStatusPage />} />
-            <Route path="/baggage" element={token ? <BaggageTrackingPage username={username!} /> : <Navigate to="/login" />} />
+            <Route path="/baggage" element={token ? <BaggageTrackingPage /> : <Navigate to="/login" />} />
             <Route path="/profile" element={token ? <ProfilePage username={username!} /> : <Navigate to="/login" />} />
             <Route path="/" element={token ? <BookingPage username={username!} /> : <Navigate to="/login" />} />
           </Routes>
