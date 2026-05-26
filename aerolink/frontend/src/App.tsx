@@ -8,25 +8,7 @@ interface User {
   email?: string;
 }
 
-// ----------------------------------------------------------------------
-// HOOKS & UTILS
-// ----------------------------------------------------------------------
-
-function useScrollReveal() {
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('active');
-        }
-      });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
-}
-
+// Helper to determine active link class
 function NavLink({ to, children, ...props }: { to: string; children: React.ReactNode; [key: string]: any }) {
   const location = useLocation();
   const isActive = location.pathname === to;
@@ -38,14 +20,14 @@ function NavLink({ to, children, ...props }: { to: string; children: React.React
 }
 
 // ----------------------------------------------------------------------
-// AUTH PAGES (LOGIN / REGISTER WITH EYE ICON)
+// LOGIN & REGISTER PAGES
 // ----------------------------------------------------------------------
 
 function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => void }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -57,9 +39,11 @@ function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => 
       try { usersList = JSON.parse(registeredUsersJson); } catch (err) {}
     }
     const matchedUser = usersList.find((u) => u.username.toLowerCase() === cleanUsername && u.password === password);
-    
-    if (matchedUser || (cleanUsername === 'passenger' && password === 'password123')) {
-      onLogin('mock-jwt-token-12345', matchedUser ? matchedUser.username : 'passenger');
+    if (matchedUser) {
+      onLogin('mock-jwt-token-12345', matchedUser.username);
+      navigate('/');
+    } else if (cleanUsername === 'passenger' && password === 'password123') {
+      onLogin('mock-jwt-token-12345', 'passenger');
       navigate('/');
     } else {
       setError('Invalid username or password.');
@@ -67,29 +51,31 @@ function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => 
   };
 
   return (
-    <div className="auth-wrapper">
-      <div className="auth-card">
+    <div className="auth-container">
+      <div className="auth-card glass-panel animate-fade-up">
         <h3>Passenger Login</h3>
         <form onSubmit={handleLogin}>
-          <div className="input-group">
-            <label>USERNAME</label>
-            <input type="text" className="auth-input" value={username} onChange={(e) => setUsername(e.target.value)} required />
-          </div>
-          <div className="input-group">
-            <label>PASSWORD</label>
-            <div className="password-wrapper">
-              <input type={showPassword ? "text" : "password"} className="auth-input" value={password} onChange={(e) => setPassword(e.target.value)} required />
-              <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? '🙈' : '👁️'}
-              </button>
-            </div>
-          </div>
-          {error && <div style={{ color: '#ef4444', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 600 }}>{error}</div>}
-          <button type="submit" className="btn-primary btn-full">Sign In</button>
+          <input type="text" className="input-flat" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
           
-          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+          <div className="pwd-input-container">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              className="input-flat" 
+              placeholder="Password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+            />
+            <button type="button" className="eye-icon-btn" onClick={() => setShowPassword(!showPassword)}>
+              {showPassword ? "👁️" : "👁️‍🗨️"}
+            </button>
+          </div>
+
+          {error && <div style={{ color: '#ef4444', margin: '10px 0', fontSize: '0.9rem', fontWeight: 600 }}>{error}</div>}
+          <button type="submit" className="btn-book btn-auth">Login</button>
+          <div style={{ marginTop: '20px' }}>
             <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
-            <Link to="/register" style={{ color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>Register</Link>
+            <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Register</Link>
           </div>
         </form>
       </div>
@@ -101,9 +87,9 @@ function RegisterPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = (e: React.FormEvent) => {
@@ -130,34 +116,33 @@ function RegisterPage() {
   };
 
   return (
-    <div className="auth-wrapper">
-      <div className="auth-card">
+    <div className="auth-container">
+      <div className="auth-card glass-panel animate-fade-up">
         <h3>Create Account</h3>
         <form onSubmit={handleRegister}>
-          <div className="input-group">
-            <label>EMAIL ADDRESS</label>
-            <input type="email" className="auth-input" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div className="input-group">
-            <label>USERNAME</label>
-            <input type="text" className="auth-input" value={username} onChange={(e) => setUsername(e.target.value)} required />
-          </div>
-          <div className="input-group">
-            <label>PASSWORD</label>
-            <div className="password-wrapper">
-              <input type={showPassword ? "text" : "password"} className="auth-input" value={password} onChange={(e) => setPassword(e.target.value)} required />
-              <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? '🙈' : '👁️'}
-              </button>
-            </div>
-          </div>
-          {error && <div style={{ color: '#ef4444', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 600 }}>{error}</div>}
-          <button type="submit" className="btn-primary btn-full">Register Now</button>
-          {success && <div style={{ marginTop: '1rem', color: '#10b981', fontWeight: 700, textAlign: 'center' }}>✅ Registration successful!</div>}
+          <input type="email" className="input-flat" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input type="text" className="input-flat" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
           
-          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+          <div className="pwd-input-container">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              className="input-flat" 
+              placeholder="Password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+            />
+            <button type="button" className="eye-icon-btn" onClick={() => setShowPassword(!showPassword)}>
+              {showPassword ? "👁️" : "👁️‍🗨️"}
+            </button>
+          </div>
+
+          {error && <div style={{ color: '#ef4444', margin: '10px 0', fontSize: '0.9rem', fontWeight: 600 }}>{error}</div>}
+          <button type="submit" className="btn-book btn-auth">Register Now</button>
+          {success && <div style={{ marginTop: '15px', color: '#10b981', fontWeight: 600 }}>✅ Registration successful!</div>}
+          <div style={{ marginTop: '20px' }}>
             <span style={{ color: 'var(--text-muted)' }}>Already have an account? </span>
-            <Link to="/login" style={{ color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
+            <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Login</Link>
           </div>
         </form>
       </div>
@@ -166,98 +151,325 @@ function RegisterPage() {
 }
 
 // ----------------------------------------------------------------------
-// HOME / BOOKING PAGE WITH SCROLL ANIMATIONS
+// MOCK DATA
 // ----------------------------------------------------------------------
 
-function HomePage() {
-  useScrollReveal();
+const AVAILABLE_FLIGHTS = [
+  { id: 'AL-101', code: 'AL-101', fromCode: 'LHR', fromCity: 'London', toCode: 'JFK', toCity: 'New York', duration: '8h 05m', status: 'On Time', gate: 'G4', time: '10:30 AM' },
+  { id: 'AL-204', code: 'AL-204', fromCode: 'CDG', fromCity: 'Paris', toCode: 'HND', toCity: 'Tokyo', duration: '12h 40m', status: 'Boarding', gate: 'F12', time: '12:15 PM' },
+  { id: 'AL-309', code: 'AL-309', fromCode: 'SIN', fromCity: 'Singapore', toCode: 'SYD', toCity: 'Sydney', duration: '7h 55m', status: 'Delayed', gate: 'T2', time: '14:45 PM' },
+  { id: 'AL-512', code: 'AL-512', fromCode: 'DXB', fromCity: 'Dubai', toCode: 'LHR', toCity: 'London', duration: '7h 15m', status: 'In Air', gate: 'A1', time: '08:00 AM' }
+];
+
+const DESTINATIONS = [
+  { title: "Venice, Italy", rating: 4.8, img: "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+  { title: "Maldives", rating: 4.9, img: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+  { title: "Tokyo, Japan", rating: 4.7, img: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
+];
+
+// ----------------------------------------------------------------------
+// HOME / BOOKING PAGE
+// ----------------------------------------------------------------------
+
+function BookingPage({ username }: { username: string }) {
+  const [selectedFlightId, setSelectedFlightId] = useState(AVAILABLE_FLIGHTS[0].id);
+  const [travelDate, setTravelDate] = useState('');
+  const [cabinClass, setCabinClass] = useState('Economy');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
+
+  const selectedFlight = AVAILABLE_FLIGHTS.find(f => f.id === selectedFlightId);
+
+  const handleBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+    setTimeout(() => {
+      setStatus('success');
+      const mockBooking = {
+        passenger: username,
+        flight: selectedFlight,
+        date: travelDate || new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0],
+        cabin: cabinClass,
+        seat: `${Math.floor(Math.random() * 30) + 1}${['A', 'B', 'C', 'D', 'F'][Math.floor(Math.random() * 5)]}`,
+        pnr: Math.random().toString(36).substring(2, 8).toUpperCase()
+      };
+      setConfirmedBooking(mockBooking);
+      const existingBookings = JSON.parse(localStorage.getItem(`bookings_${username}`) || '[]');
+      existingBookings.push(mockBooking);
+      localStorage.setItem(`bookings_${username}`, JSON.stringify(existingBookings));
+    }, 1200);
+  };
 
   return (
-    <div>
-      {/* Hero Section */}
-      <div className="hero-section">
-        <div className="hero-subtitle">READY TAKE-OFF</div>
-        <h2 className="hero-title">CONVENIENT ONLINE<br/>FLIGHT BOOKING SERVICES</h2>
-        <img 
-          src="https://plus.unsplash.com/premium_photo-1679758629910-3331a90c5fa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80" 
-          alt="3D Airplane Floating" 
-          className="floating-plane reveal" 
-          style={{ borderRadius: '20px', height: '400px', objectFit: 'cover' }}
-        />
+    <>
+      <div className="hero-section animate-fade-up">
+        <h2 className="hero-title">WHERE DO<br/>YOU WANT TO<br/>EXPLORE</h2>
+        <p className="hero-subtitle">Discover the world with AeroLink. Unmatched comfort, luxury travel, and destinations that inspire.</p>
       </div>
 
-      {/* Booking Bar (Pill Shape) */}
-      <div className="booking-bar-wrapper reveal">
-        <form className="booking-bar" onSubmit={(e) => e.preventDefault()}>
-          <div className="bb-item">
-            <span className="bb-label">From</span>
-            <select className="bb-input">
-              <option>Tokyo, Japan</option>
-              <option>London, UK</option>
-              <option>New York, USA</option>
+      <div className="booking-bar-container animate-fade-up delay-1">
+        <form onSubmit={handleBooking} className="glass-panel booking-bar">
+          <div className="form-group-horiz">
+            <label>Route</label>
+            <select className="input-flat" value={selectedFlightId} onChange={(e) => setSelectedFlightId(e.target.value)}>
+              {AVAILABLE_FLIGHTS.map((flight) => (
+                <option key={flight.id} value={flight.id}>
+                  {flight.fromCity} ➔ {flight.toCity}
+                </option>
+              ))}
             </select>
           </div>
-          <div className="bb-item">
-            <span className="bb-label">To</span>
-            <select className="bb-input">
-              <option>Berlin, Germany</option>
-              <option>Paris, France</option>
-              <option>Dubai, UAE</option>
+          <div className="form-group-horiz">
+            <label>Travel Date</label>
+            <input type="date" className="input-flat" value={travelDate} onChange={(e) => setTravelDate(e.target.value)} required />
+          </div>
+          <div className="form-group-horiz">
+            <label>Cabin</label>
+            <select className="input-flat" value={cabinClass} onChange={(e) => setCabinClass(e.target.value)}>
+              <option value="Economy">Economy</option>
+              <option value="Business">Business</option>
+              <option value="First Class">First Class</option>
             </select>
           </div>
-          <div className="bb-item">
-            <span className="bb-label">Departure</span>
-            <input type="date" className="bb-input" defaultValue="2026-10-11" />
+          <div className="form-group-horiz" style={{flex: '0 0 auto'}}>
+            <button type="submit" className="btn-book" disabled={status === 'loading'}>
+              {status === 'loading' ? 'Booking...' : 'Book Trip ➔'}
+            </button>
           </div>
-          <div className="bb-item">
-            <span className="bb-label">Return</span>
-            <input type="date" className="bb-input" defaultValue="2026-12-15" />
+        </form>
+
+        {status === 'success' && confirmedBooking && (
+          <div className="boarding-pass animate-fade-up delay-2">
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid var(--border)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+              <span style={{ fontWeight: 900, color: 'var(--primary)', letterSpacing: '2px' }}>AEROLINK BOARDING PASS</span>
+              <span style={{ fontWeight: 800 }}>{confirmedBooking.cabin}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div className="airport-code">{confirmedBooking.flight.fromCode}</div>
+                <div style={{color: 'var(--text-muted)'}}>{confirmedBooking.flight.fromCity}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, padding: '0 2rem' }}>
+                <span style={{ fontSize: '1.5rem', color: 'var(--primary)' }}>✈️</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', borderTop: '2px dashed var(--border)', width: '100%', textAlign: 'center', marginTop: '10px', paddingTop: '10px' }}>
+                  {confirmedBooking.flight.duration}
+                </span>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div className="airport-code">{confirmedBooking.flight.toCode}</div>
+                <div style={{color: 'var(--text-muted)'}}>{confirmedBooking.flight.toCity}</div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginTop: '2rem', padding: '1.5rem', background: 'var(--bg-main)', borderRadius: '8px' }}>
+              <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>PASSENGER</span><div style={{fontWeight:800}}>{confirmedBooking.passenger}</div></div>
+              <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>DATE</span><div style={{fontWeight:800}}>{confirmedBooking.date}</div></div>
+              <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>SEAT/GATE</span><div style={{fontWeight:800}}>{confirmedBooking.seat} / {confirmedBooking.flight.gate}</div></div>
+              <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>PNR</span><div style={{fontWeight:800}}>{confirmedBooking.pnr}</div></div>
+            </div>
           </div>
-          <button type="submit" className="btn-primary" style={{ padding: '16px', borderRadius: '50%', width: '55px', height: '55px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '10px' }}>
-            🔍
+        )}
+      </div>
+
+      <div className="destinations-section animate-fade-up delay-3">
+        <h3>Popular Destinations</h3>
+        <div className="dest-grid">
+          {DESTINATIONS.map((dest, i) => (
+            <div key={i} className="dest-card">
+              <img src={dest.img} alt={dest.title} />
+              <div className="dest-info">
+                <h4>{dest.title}</h4>
+                <span>⭐ {dest.rating} Rating</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ----------------------------------------------------------------------
+// FLIGHT STATUS PAGE
+// ----------------------------------------------------------------------
+
+function FlightStatusPage() {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'On Time': return '#10b981';
+      case 'Boarding': return '#3b82f6';
+      case 'Delayed': return '#ef4444';
+      case 'In Air': return '#8b5cf6';
+      default: return '#64748b';
+    }
+  };
+
+  return (
+    <div className="inner-page-container animate-fade-up">
+      <div className="inner-header">
+        <h2>Flight Status</h2>
+        <p>Real-time tracking of global AeroLink arrivals and departures.</p>
+      </div>
+      
+      <div className="glass-panel" style={{ padding: '3rem' }}>
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '3rem' }}>
+          <input type="text" className="input-flat" placeholder="Search by Flight ID or City" />
+          <button className="btn-book">Search</button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {AVAILABLE_FLIGHTS.map(flight => (
+            <div key={flight.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', background: 'var(--bg-panel)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
+                <div style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--primary)', width: '100px' }}>{flight.code}</div>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-main)' }}>{flight.fromCity} ➔ {flight.toCity}</div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '5px', fontWeight: 600 }}>Scheduled: {flight.time} &nbsp;|&nbsp; Gate: {flight.gate}</div>
+                </div>
+              </div>
+              <div style={{ padding: '8px 20px', borderRadius: '50px', fontSize: '0.9rem', fontWeight: 800, backgroundColor: `${getStatusColor(flight.status)}15`, color: getStatusColor(flight.status) }}>
+                {flight.status}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// BAGGAGE TRACKING PAGE
+// ----------------------------------------------------------------------
+
+function BaggageTrackingPage({ username }: { username: string }) {
+  const [baggageId, setBaggageId] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [bagStatus, setBagStatus] = useState<any>(null);
+
+  const handleTrack = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!baggageId) return;
+    setIsSearching(true);
+    setTimeout(() => {
+      setBagStatus({
+        id: baggageId.toUpperCase(), passenger: username, flight: 'AL-101', weight: '23.4 kg', currentStage: 2, lastUpdate: new Date().toLocaleTimeString(), location: 'LHR - Terminal 5 Sorting'
+      });
+      setIsSearching(false);
+    }, 1000);
+  };
+
+  const stages = ['Checked In', 'Security', 'Loaded', 'Carousel'];
+
+  return (
+    <div className="inner-page-container animate-fade-up">
+      <div className="inner-header">
+        <h2>Track Luggage</h2>
+        <p>Locate your checked bags globally in real-time.</p>
+      </div>
+
+      <div className="glass-panel" style={{ padding: '3rem', maxWidth: '800px', margin: '0 auto' }}>
+        <form onSubmit={handleTrack} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Baggage Tag Number</label>
+            <input type="text" className="input-flat" placeholder="e.g. BAG-889922" value={baggageId} onChange={(e) => setBaggageId(e.target.value)} required />
+          </div>
+          <button type="submit" className="btn-book" disabled={isSearching} style={{ width: '100%' }}>
+            {isSearching ? 'Locating...' : 'Track Luggage'}
           </button>
         </form>
+
+        {bagStatus && (
+          <div className="animate-fade-up delay-1" style={{ marginTop: '3rem', borderTop: '2px solid var(--border)', paddingTop: '3rem' }}>
+            <h4 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '1.5rem', color: 'var(--primary)' }}>Bag: {bagStatus.id}</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '3rem' }}>
+              <div><div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>PASSENGER</div><div style={{ fontWeight: 800 }}>{bagStatus.passenger}</div></div>
+              <div><div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>FLIGHT</div><div style={{ fontWeight: 800 }}>{bagStatus.flight}</div></div>
+              <div><div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>WEIGHT</div><div style={{ fontWeight: 800 }}>{bagStatus.weight}</div></div>
+              <div><div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>LOCATION</div><div style={{ fontWeight: 800 }}>{bagStatus.location}</div></div>
+            </div>
+
+            <div style={{ position: 'relative', marginTop: '2rem' }}>
+              <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', height: '4px', background: 'var(--border)', zIndex: 0 }}></div>
+              <div style={{ position: 'absolute', top: '20px', left: '20px', width: `${(bagStatus.currentStage / 3) * 100}%`, height: '4px', background: 'var(--primary)', zIndex: 1, transition: 'width 1s ease' }}></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
+                {stages.map((stage, index) => {
+                  const isActive = index <= bagStatus.currentStage;
+                  return (
+                    <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '90px' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: isActive ? 'var(--primary)' : 'var(--bg-panel)', border: `3px solid ${isActive ? 'var(--primary)' : 'var(--border)'}`, color: isActive ? 'white' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem', boxShadow: isActive ? '0 0 15px rgba(0,82,204,0.4)' : 'none' }}>
+                        {isActive && '✓'}
+                      </div>
+                      <span style={{ fontSize: '0.8rem', textAlign: 'center', marginTop: '12px', fontWeight: isActive ? 800 : 600, color: isActive ? 'var(--text-main)' : 'var(--text-muted)' }}>{stage}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// PROFILE PAGE
+// ----------------------------------------------------------------------
+
+function ProfilePage({ username }: { username: string }) {
+  const bookingsJson = localStorage.getItem(`bookings_${username}`);
+  let myBookings = [];
+  if (bookingsJson) {
+    try { myBookings = JSON.parse(bookingsJson); } catch (e) {}
+  }
+
+  return (
+    <div className="inner-page-container animate-fade-up">
+      <div className="inner-header">
+        <h2>Welcome, {username}</h2>
+        <p>Manage your trips, loyalty miles, and account preferences.</p>
       </div>
 
-      {/* Section 1: Top Flight Deals */}
-      <section className="content-section reveal">
-        <h3 className="section-title">TOP FLIGHT DEALS</h3>
-        <p className="section-subtitle">Discover top flight deals for elite travel experiences at unprecedented prices.</p>
-        
-        <div className="card-grid">
-          <div className="deal-card">
-            <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80" alt="Luxury Travel" className="deal-img"/>
-            <div className="deal-content">
-              <h4>Luxury Travel and Airlines</h4>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '10px' }}>Comfort and exclusivity for discerning travelers.</p>
-              <button className="btn-primary" style={{ marginTop: '15px', padding: '8px 20px', fontSize: '0.85rem' }}>Learn More</button>
-            </div>
-          </div>
-          <div className="deal-card">
-            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80" alt="Hotel Bookings" className="deal-img"/>
-            <div className="deal-content">
-              <h4>Hotel Bookings ↗</h4>
-            </div>
-          </div>
-          <div className="deal-card">
-            <img src="https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&w=600&q=80" alt="Domestic" className="deal-img"/>
-            <div className="deal-content">
-              <h4>Book Domestic ↗</h4>
-            </div>
+      <div className="profile-layout">
+        <div className="glass-panel profile-sidebar">
+          <div className="avatar-large">{username.substring(0, 2).toUpperCase()}</div>
+          <h4 style={{ fontSize: '1.8rem', fontWeight: 900 }}>{username}</h4>
+          <span style={{ display: 'inline-block', padding: '8px 20px', background: 'rgba(255, 215, 0, 0.1)', color: '#b8860b', border: '1px solid rgba(255, 215, 0, 0.4)', borderRadius: '50px', fontWeight: 800, fontSize: '0.85rem', marginTop: '1rem', textTransform: 'uppercase' }}>
+            Elite Executive
+          </span>
+          <div style={{ marginTop: '2.5rem', width: '100%', textAlign: 'left' }}>
+            <div style={{ marginBottom: '1rem' }}><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>LOYALTY BALANCE</span><div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--primary)' }}>84,300 <span style={{ fontSize: '1rem', fontWeight: 700 }}>Miles</span></div></div>
+            <div style={{ marginBottom: '1rem' }}><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MEMBER ID</span><div style={{ fontWeight: 700 }}>AL-485763</div></div>
+            <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MEMBER SINCE</span><div style={{ fontWeight: 700 }}>May 2026</div></div>
           </div>
         </div>
-      </section>
 
-      {/* Section 2: Popular Airlines */}
-      <section className="content-section reveal" style={{ backgroundColor: 'var(--bg-panel)' }}>
-        <h3 className="section-title">MOST POPULAR AIRLINES</h3>
-        <p className="section-subtitle">The world's leading airlines offer top-notch service.</p>
-        <div style={{ display: 'flex', gap: '2rem', overflowX: 'auto', padding: '1rem 0', paddingBottom: '2rem' }}>
-          <img src="https://images.unsplash.com/photo-1542296332-2e4473faf563?auto=format&fit=crop&w=300&h=200" alt="Airline 1" style={{ borderRadius: '16px', minWidth: '300px' }} />
-          <img src="https://images.unsplash.com/photo-1518983838421-496c16110f03?auto=format&fit=crop&w=300&h=200" alt="Airline 2" style={{ borderRadius: '16px', minWidth: '300px' }} />
-          <img src="https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?auto=format&fit=crop&w=300&h=200" alt="Airline 3" style={{ borderRadius: '16px', minWidth: '300px' }} />
+        <div className="glass-panel" style={{ padding: '3rem' }}>
+          <h3 style={{ fontSize: '1.8rem', fontWeight: 900, borderBottom: '2px solid var(--border)', paddingBottom: '1rem', marginBottom: '2rem' }}>
+            Upcoming Trips
+          </h3>
+          
+          {myBookings.length === 0 ? (
+            <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--bg-main)', borderRadius: '12px' }}>
+              <span style={{ fontSize: '3rem' }}>🌍</span>
+              <p style={{ marginTop: '15px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '1.1rem' }}>Your itinerary is empty.</p>
+              <Link to="/"><button className="btn-book" style={{ marginTop: '20px' }}>Book a Flight</button></Link>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {myBookings.map((b: any, index: number) => (
+                <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-panel)' }}>
+                  <div>
+                    <div style={{ fontWeight: 900, fontSize: '1.2rem' }}>{b.flight.fromCity} ➔ {b.flight.toCity}</div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', fontWeight: 600 }}>{b.date} &nbsp;•&nbsp; {b.flight.code} &nbsp;•&nbsp; PNR: <span style={{ color: 'var(--primary)' }}>{b.pnr}</span></div>
+                  </div>
+                  <Link to="/baggage"><button className="btn-book" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>Track Bags</button></Link>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </section>
+      </div>
     </div>
   );
 }
@@ -269,14 +481,16 @@ function HomePage() {
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [username, setUsername] = useState<string | null>(localStorage.getItem('username'));
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem('theme') as 'light' | 'dark') || 'light');
+  const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   const handleLogin = (newToken: string, user: string) => {
     setToken(newToken);
@@ -301,23 +515,27 @@ function App() {
             <h1>AeroLink</h1>
           </Link>
           <div className="nav-links">
-            <button onClick={toggleTheme} className="theme-toggle" title="Toggle Theme">
-              {theme === 'light' ? '🌙' : '☀️'}
-            </button>
             {token ? (
               <>
-                <NavLink to="/">Flights</NavLink>
-                <NavLink to="/">Hotel</NavLink>
+                <NavLink to="/">Book</NavLink>
+                <NavLink to="/flights">Status</NavLink>
+                <NavLink to="/baggage">Baggage</NavLink>
                 <NavLink to="/profile">Profile</NavLink>
-                <button onClick={handleLogout} className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
+                <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
+                  {theme === 'light' ? '🌙' : '☀️'}
+                </button>
+                <button onClick={handleLogout} className="btn-book" style={{ padding: '10px 24px', fontSize: '0.85rem', marginLeft: '0.5rem', background: 'transparent', border: '2px solid var(--border)', color: 'var(--nav-text)' }}>
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <NavLink to="/">Flights</NavLink>
-                <NavLink to="/">Hotel</NavLink>
-                <Link to="/login"><button className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>Sign In</button></Link>
+                <NavLink to="/flights">Status</NavLink>
+                <NavLink to="/login">Login</NavLink>
+                <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
+                  {theme === 'light' ? '🌙' : '☀️'}
+                </button>
+                <Link to="/register"><button className="btn-book" style={{ padding: '10px 24px', fontSize: '0.85rem', marginLeft: '0.5rem' }}>Register</button></Link>
               </>
             )}
           </div>
@@ -327,9 +545,10 @@ function App() {
           <Routes>
             <Route path="/login" element={!token ? <LoginPage onLogin={handleLogin} /> : <Navigate to="/" />} />
             <Route path="/register" element={!token ? <RegisterPage /> : <Navigate to="/" />} />
-            <Route path="/" element={<HomePage />} />
-            {/* Fallback routing for profile so it doesnt crash if they click */}
-            <Route path="/profile" element={token ? <div className="inner-header"><div className="panel"><h2>Profile</h2><p>Logged in as {username}</p></div></div> : <Navigate to="/login" />} />
+            <Route path="/flights" element={<FlightStatusPage />} />
+            <Route path="/baggage" element={token ? <BaggageTrackingPage username={username!} /> : <Navigate to="/login" />} />
+            <Route path="/profile" element={token ? <ProfilePage username={username!} /> : <Navigate to="/login" />} />
+            <Route path="/" element={token ? <BookingPage username={username!} /> : <Navigate to="/login" />} />
           </Routes>
         </main>
       </div>
