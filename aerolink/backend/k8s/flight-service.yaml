@@ -25,6 +25,7 @@ metadata:
   name: flight-service
   namespace: default
 spec:
+  type: LoadBalancer
   selector:
     app: flight-service
   ports:

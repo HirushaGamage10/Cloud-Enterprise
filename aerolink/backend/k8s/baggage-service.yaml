@@ -25,6 +25,7 @@ metadata:
   name: baggage-service
   namespace: default
 spec:
+  type: LoadBalancer
   selector:
     app: baggage-service
   ports:

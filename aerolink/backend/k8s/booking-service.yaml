@@ -47,10 +47,11 @@ metadata:
   name: booking-service
   namespace: default
 spec:
+  type: LoadBalancer
   selector:
     app: booking-service
   ports:
     - protocol: TCP
       port: 80
       targetPort: 8000
-  type: ClusterIP
+  type: LoadBalancer
