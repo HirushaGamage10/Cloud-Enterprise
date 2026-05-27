@@ -10,22 +10,24 @@ module "eks" {
   cluster_endpoint_public_access = true
 
   cluster_addons = {
-    coredns    = {}
-    kube-proxy = {}
-    vpc-cni    = {}
+    coredns                         = {}
+    kube-proxy                      = {}
+    vpc-cni                         = {}
     amazon-cloudwatch-observability = {}
+    aws-ebs-csi-driver              = {}
   }
 
   eks_managed_node_groups = {
     core = {
       min_size     = 2
-      max_size     = 4
-      desired_size = 3
+      max_size     = 5
+      desired_size = 4
       instance_types = ["t3.small"]
       capacity_type  = "ON_DEMAND"
 
       iam_role_additional_policies = {
         CloudWatchAgentServerPolicy = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+        AmazonEBSCSIDriverPolicy    = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
       }
     }
   }
