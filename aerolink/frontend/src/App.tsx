@@ -186,43 +186,76 @@ const DESTINATIONS = [
 // HOME / BOOKING PAGE
 // ----------------------------------------------------------------------
 
+const API_BASE = 'https://7ag3472kh7.execute-api.eu-west-1.amazonaws.com';
+
 function BookingPage({ username }: { username: string }) {
   const [flights, setFlights] = useState<any[]>([]);
   const [selectedFlightId, setSelectedFlightId] = useState('');
-
-  useEffect(() => {
-    const dbFlights = getFlightsDatabase();
-    setFlights(dbFlights);
-    if (dbFlights.length > 0) setSelectedFlightId(dbFlights[0].id);
-  }, []);
   const [travelDate, setTravelDate] = useState('');
   const [cabinClass, setCabinClass] = useState('Economy');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  
+  // Status states for third-party integrations
+  const [status, setStatus] = useState<'idle' | 'payment' | 'immigration' | 'success' | 'error'>('idle');
   const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
+
+  useEffect(() => {
+    // Attempt to fetch live from API, fallback to localStorage
+    const fetchFlights = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/flights`);
+        if (!response.ok) throw new Error('API not available');
+        const data = await response.json();
+        setFlights(data);
+        if (data.length > 0) setSelectedFlightId(data[0].id);
+      } catch (err) {
+        console.warn('Falling back to local database for flights');
+        const dbFlights = getFlightsDatabase();
+        setFlights(dbFlights);
+        if (dbFlights.length > 0) setSelectedFlightId(dbFlights[0].id);
+      }
+    };
+    fetchFlights();
+  }, []);
 
   const selectedFlight = flights.find(f => f.id === selectedFlightId);
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus('loading');
-    setTimeout(() => {
-      setStatus('success');
-      const pnr = Math.random().toString(36).substring(2, 8).toUpperCase();
-      const mockBooking = {
-        passenger: username,
-        flight: selectedFlight,
-        date: travelDate || new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0],
-        cabin: cabinClass,
-        seat: `${Math.floor(Math.random() * 30) + 1}${['A', 'B', 'C', 'D', 'F'][Math.floor(Math.random() * 5)]}`,
-        pnr: pnr,
-        baggageId: `BAG-${pnr}`
-      };
-      setConfirmedBooking(mockBooking);
+    if (!selectedFlight) return;
+    
+    // Simulate Third-Party Payment Gateway Integration
+    setStatus('payment');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Simulate Third-Party Immigration Authority Integration
+    setStatus('immigration');
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Proceed with actual booking (Try API, fallback to local)
+    const pnr = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const mockBooking = {
+      passenger: username,
+      flight: selectedFlight,
+      date: travelDate || new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0],
+      cabin: cabinClass,
+      seat: `${Math.floor(Math.random() * 30) + 1}${['A', 'B', 'C', 'D', 'F'][Math.floor(Math.random() * 5)]}`,
+      pnr: pnr,
+      baggageId: `BAG-${pnr}`
+    };
+
+    try {
+      const response = await fetch(`${API_BASE}/api/v1/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mockBooking)
+      });
+      if (!response.ok) throw new Error('API Booking failed');
+    } catch (err) {
+      console.warn('Falling back to local database for booking');
       const existingBookings = JSON.parse(localStorage.getItem(`bookings_${username}`) || '[]');
       existingBookings.push(mockBooking);
       localStorage.setItem(`bookings_${username}`, JSON.stringify(existingBookings));
-
-      // Update flight database to reduce available seats
+      
       const updatedFlights = flights.map(f => {
         if (f.id === selectedFlight.id) {
           return { ...f, seats: f.seats > 0 ? f.seats - 1 : 0 };
@@ -231,8 +264,10 @@ function BookingPage({ username }: { username: string }) {
       });
       localStorage.setItem('database_flights', JSON.stringify(updatedFlights));
       setFlights(updatedFlights);
+    }
 
-    }, 1200);
+    setConfirmedBooking(mockBooking);
+    setStatus('success');
   };
 
   return (
@@ -267,8 +302,10 @@ function BookingPage({ username }: { username: string }) {
             </select>
           </div>
           <div className="form-group-horiz" style={{flex: '0 0 auto'}}>
-            <button type="submit" className="btn-book" disabled={status === 'loading'}>
-              {status === 'loading' ? 'Booking...' : 'Book Trip ➔'}
+            <button type="submit" className="btn-book" disabled={status !== 'idle' && status !== 'error'}>
+              {status === 'payment' ? '💳 Authenticating Payment...' : 
+               status === 'immigration' ? '🛂 Verifying Immigration...' :
+               status === 'success' ? 'Booked Successfully' : 'Book Trip ➔'}
             </button>
           </div>
         </form>
@@ -483,6 +520,97 @@ function BaggageTrackingPage() {
 }
 
 // ----------------------------------------------------------------------
+// PASSENGER CHECK-IN PAGE
+// ----------------------------------------------------------------------
+
+function CheckInPage() {
+  const [pnr, setPnr] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [checkInStatus, setCheckInStatus] = useState<any>(null);
+  const [error, setError] = useState('');
+
+  const handleCheckIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pnr || !lastName) return;
+    setIsCheckingIn(true);
+    setError('');
+    setCheckInStatus(null);
+
+    // Simulated API Call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    let foundBooking = null;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('bookings_')) {
+        const userBookings = JSON.parse(localStorage.getItem(key) || '[]');
+        const booking = userBookings.find((b: any) => 
+          b.pnr === pnr.toUpperCase() && b.passenger.toLowerCase().includes(lastName.toLowerCase())
+        );
+        if (booking) {
+          foundBooking = booking;
+          break;
+        }
+      }
+    }
+
+    if (foundBooking) {
+      setCheckInStatus(foundBooking);
+    } else {
+      setError('Booking not found. Please verify your PNR and Last Name.');
+    }
+    setIsCheckingIn(false);
+  };
+
+  return (
+    <div className="inner-page-container animate-fade-up">
+      <div className="inner-header">
+        <h2>Web Check-In</h2>
+        <p>Complete your check-in securely and get your digital boarding pass.</p>
+      </div>
+
+      <div className="glass-panel" style={{ padding: '3rem', maxWidth: '800px', margin: '0 auto' }}>
+        <form onSubmit={handleCheckIn} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>PNR / Booking Reference</label>
+            <input type="text" className="input-flat" placeholder="e.g. X7Y8Z9" value={pnr} onChange={(e) => setPnr(e.target.value)} required />
+          </div>
+          <div>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Passenger Last Name</label>
+            <input type="text" className="input-flat" placeholder="Enter last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+          </div>
+          {error && <div style={{ color: '#ef4444', fontWeight: 600, fontSize: '0.95rem' }}>{error}</div>}
+          <button type="submit" className="btn-book" disabled={isCheckingIn} style={{ width: '100%' }}>
+            {isCheckingIn ? 'Verifying Details...' : 'Check In Now'}
+          </button>
+        </form>
+
+        {checkInStatus && (
+          <div className="animate-fade-up delay-1" style={{ marginTop: '3rem', borderTop: '2px solid var(--border)', paddingTop: '3rem', textAlign: 'center' }}>
+            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', margin: '0 auto 1.5rem auto' }}>
+              ✓
+            </div>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '1rem' }}>You're Checked In!</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Your boarding pass has been generated and sent to your registered email.</p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+              <div style={{ background: 'var(--bg-glass)', padding: '15px 30px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>SEAT NUMBER</span>
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)' }}>{checkInStatus.seat}</div>
+              </div>
+              <div style={{ background: 'var(--bg-glass)', padding: '15px 30px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>GATE</span>
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)' }}>{checkInStatus.flight.gate}</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
 // PROFILE PAGE
 // ----------------------------------------------------------------------
 
@@ -594,6 +722,7 @@ function App() {
             {token ? (
               <>
                 <NavLink to="/">Book</NavLink>
+                <NavLink to="/checkin">Check-In</NavLink>
                 <NavLink to="/flights">Status</NavLink>
                 <NavLink to="/baggage">Baggage</NavLink>
                 <NavLink to="/profile">Profile</NavLink>
@@ -622,6 +751,7 @@ function App() {
             <Route path="/login" element={!token ? <LoginPage onLogin={handleLogin} /> : <Navigate to="/" />} />
             <Route path="/register" element={!token ? <RegisterPage /> : <Navigate to="/" />} />
             <Route path="/flights" element={<FlightStatusPage />} />
+            <Route path="/checkin" element={token ? <CheckInPage /> : <Navigate to="/login" />} />
             <Route path="/baggage" element={token ? <BaggageTrackingPage /> : <Navigate to="/login" />} />
             <Route path="/profile" element={token ? <ProfilePage username={username!} /> : <Navigate to="/login" />} />
             <Route path="/" element={token ? <BookingPage username={username!} /> : <Navigate to="/login" />} />
