@@ -39,7 +39,17 @@ function LoginPage({ onLogin }: { onLogin: (token: string, username: string) => 
       try { usersList = JSON.parse(registeredUsersJson); } catch (err) {}
     }
     const matchedUser = usersList.find((u) => u.username.toLowerCase() === cleanUsername && u.password === password);
-    if (matchedUser) {
+    const adminUsersJson = localStorage.getItem('admin_users');
+    let adminUsersList: User[] = [{ username: 'admin', password: 'admin123' }];
+    if (adminUsersJson) {
+      try { adminUsersList = JSON.parse(adminUsersJson); } catch (err) {}
+    }
+    const matchedAdmin = adminUsersList.find((u) => u.username.toLowerCase() === cleanUsername && u.password === password);
+
+    if (matchedAdmin) {
+      onLogin('mock-jwt-admin', matchedAdmin.username);
+      navigate('/admin');
+    } else if (matchedUser) {
       onLogin('mock-jwt-token-12345', matchedUser.username);
       navigate('/');
     } else if (cleanUsername === 'passenger' && password === 'password123') {
@@ -677,6 +687,166 @@ function ProfilePage({ username }: { username: string }) {
 }
 
 // ----------------------------------------------------------------------
+// ADMIN DASHBOARD PAGE
+// ----------------------------------------------------------------------
+
+function AdminDashboardPage() {
+  const [activeTab, setActiveTab] = useState('flights');
+  
+  const [newFlight, setNewFlight] = useState({ code: '', fromCode: '', fromCity: '', toCode: '', toCity: '', duration: '', time: '', seats: 150 });
+  const [flights, setFlights] = useState<any[]>(getFlightsDatabase());
+  const [statusUpdate, setStatusUpdate] = useState({ flightId: '', status: 'On Time' });
+  const [newAdmin, setNewAdmin] = useState({ username: '', password: '' });
+  const [allBookings, setAllBookings] = useState<any[]>([]);
+
+  useEffect(() => {
+    let bookings: any[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('bookings_')) {
+        const userBookings = JSON.parse(localStorage.getItem(key) || '[]');
+        bookings = [...bookings, ...userBookings];
+      }
+    }
+    setAllBookings(bookings);
+  }, []);
+
+  const handleAddFlight = (e: React.FormEvent) => {
+    e.preventDefault();
+    const flight = { ...newFlight, id: newFlight.code, status: 'On Time', gate: 'TBD', seats: Number(newFlight.seats) };
+    const updatedFlights = [...flights, flight];
+    localStorage.setItem('database_flights', JSON.stringify(updatedFlights));
+    setFlights(updatedFlights);
+    alert('Flight Added Successfully');
+  };
+
+  const handleUpdateStatus = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!statusUpdate.flightId) return;
+    const updatedFlights = flights.map(f => f.id === statusUpdate.flightId ? { ...f, status: statusUpdate.status } : f);
+    localStorage.setItem('database_flights', JSON.stringify(updatedFlights));
+    setFlights(updatedFlights);
+    alert('Flight Status Updated');
+  };
+
+  const handleRegisterAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const adminUsersJson = localStorage.getItem('admin_users');
+    let adminUsersList = [{ username: 'admin', password: 'admin123' }];
+    if (adminUsersJson) {
+      try { adminUsersList = JSON.parse(adminUsersJson); } catch (err) {}
+    }
+    if (adminUsersList.some(u => u.username.toLowerCase() === newAdmin.username.toLowerCase())) {
+      alert('Admin username already exists!');
+      return;
+    }
+    adminUsersList.push(newAdmin);
+    localStorage.setItem('admin_users', JSON.stringify(adminUsersList));
+    setNewAdmin({ username: '', password: '' });
+    alert('New Admin Registered Successfully');
+  };
+
+  return (
+    <div className="inner-page-container animate-fade-up">
+      <div className="inner-header">
+        <h2>AeroLink Admin Center</h2>
+        <p>Manage flights, monitor check-ins, and control staff access.</p>
+      </div>
+      <div className="profile-layout">
+        <div className="glass-panel profile-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+           <button onClick={() => setActiveTab('flights')} className={`btn-book ${activeTab!=='flights'?'btn-outline':''}`} style={{width:'100%'}}>Manage Flights</button>
+           <button onClick={() => setActiveTab('checkins')} className={`btn-book ${activeTab!=='checkins'?'btn-outline':''}`} style={{width:'100%'}}>Passenger Check-Ins</button>
+           <button onClick={() => setActiveTab('admins')} className={`btn-book ${activeTab!=='admins'?'btn-outline':''}`} style={{width:'100%'}}>Register Admin</button>
+        </div>
+        <div className="glass-panel" style={{ padding: '3rem', flex: 1 }}>
+          {activeTab === 'flights' && (
+            <div className="animate-fade-up">
+              <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '2rem' }}>Update Flight Status</h3>
+              <form onSubmit={handleUpdateStatus} style={{ display: 'flex', gap: '15px', marginBottom: '4rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                   <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Select Flight</label>
+                   <select className="input-flat" value={statusUpdate.flightId} onChange={e => setStatusUpdate({...statusUpdate, flightId: e.target.value})} required>
+                     <option value="">Select...</option>
+                     {flights.map(f => <option key={f.id} value={f.id}>{f.code} - {f.fromCity} to {f.toCity}</option>)}
+                   </select>
+                </div>
+                <div style={{ flex: 1, minWidth: '150px' }}>
+                   <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Status</label>
+                   <select className="input-flat" value={statusUpdate.status} onChange={e => setStatusUpdate({...statusUpdate, status: e.target.value})}>
+                     <option value="On Time">On Time</option>
+                     <option value="Boarding">Boarding</option>
+                     <option value="In Air">In Air</option>
+                     <option value="Delayed">Delayed</option>
+                     <option value="Cancelled">Cancelled</option>
+                   </select>
+                </div>
+                <button type="submit" className="btn-book">Update</button>
+              </form>
+
+              <h3 style={{ fontSize: '1.6rem', fontWeight: 800, borderTop: '2px solid var(--border)', paddingTop: '2.5rem', marginBottom: '2rem' }}>Add New Flight</h3>
+              <form onSubmit={handleAddFlight} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div><label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Flight Code</label><input type="text" className="input-flat" placeholder="e.g. AL-999" value={newFlight.code} onChange={e => setNewFlight({...newFlight, code: e.target.value})} required /></div>
+                <div><label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Scheduled Time</label><input type="text" className="input-flat" placeholder="e.g. 08:00 AM" value={newFlight.time} onChange={e => setNewFlight({...newFlight, time: e.target.value})} required /></div>
+                <div><label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>From Airport Code</label><input type="text" className="input-flat" placeholder="e.g. LHR" value={newFlight.fromCode} onChange={e => setNewFlight({...newFlight, fromCode: e.target.value})} required /></div>
+                <div><label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>From City</label><input type="text" className="input-flat" placeholder="e.g. London" value={newFlight.fromCity} onChange={e => setNewFlight({...newFlight, fromCity: e.target.value})} required /></div>
+                <div><label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>To Airport Code</label><input type="text" className="input-flat" placeholder="e.g. JFK" value={newFlight.toCode} onChange={e => setNewFlight({...newFlight, toCode: e.target.value})} required /></div>
+                <div><label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>To City</label><input type="text" className="input-flat" placeholder="e.g. New York" value={newFlight.toCity} onChange={e => setNewFlight({...newFlight, toCity: e.target.value})} required /></div>
+                <div><label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Flight Duration</label><input type="text" className="input-flat" placeholder="e.g. 5h 30m" value={newFlight.duration} onChange={e => setNewFlight({...newFlight, duration: e.target.value})} required /></div>
+                <div><label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Seat Capacity</label><input type="number" className="input-flat" placeholder="e.g. 150" value={newFlight.seats} onChange={e => setNewFlight({...newFlight, seats: Number(e.target.value)})} required /></div>
+                <button type="submit" className="btn-book" style={{ gridColumn: '1 / -1', marginTop: '10px' }}>Deploy New Flight</button>
+              </form>
+            </div>
+          )}
+
+          {activeTab === 'checkins' && (
+             <div className="animate-fade-up">
+               <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '2rem' }}>Global Passenger Bookings & Check-Ins</h3>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                 {allBookings.map((b, i) => (
+                    <div key={i} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem', background: 'var(--bg-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{fontWeight: 900, fontSize: '1.2rem'}}>{b.passenger} <span style={{color: 'var(--primary)', fontSize: '0.9rem', marginLeft: '10px'}}>{b.pnr}</span></div>
+                        <div style={{fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '5px', fontWeight: 600}}>{b.flight.code} &nbsp;|&nbsp; {b.flight.fromCity} ➔ {b.flight.toCity} &nbsp;|&nbsp; {b.date}</div>
+                      </div>
+                      <div style={{textAlign: 'right', background: 'rgba(16, 185, 129, 0.1)', padding: '10px 15px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)'}}>
+                        <div style={{fontSize: '0.85rem', fontWeight: 800, color: '#10b981'}}>Seat: {b.seat}</div>
+                        <div style={{fontSize: '0.85rem', fontWeight: 800, color: '#10b981'}}>Bag ID: {b.baggageId}</div>
+                      </div>
+                    </div>
+                 ))}
+                 {allBookings.length === 0 && (
+                   <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                     <p style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '1.1rem' }}>No passenger bookings found across the network.</p>
+                   </div>
+                 )}
+               </div>
+             </div>
+          )}
+
+          {activeTab === 'admins' && (
+             <div className="animate-fade-up">
+               <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '2rem' }}>Register System Administrator</h3>
+               <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Grant enterprise dashboard access to new operational staff.</p>
+               <form onSubmit={handleRegisterAdmin} style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '500px' }}>
+                 <div>
+                   <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Admin Username</label>
+                   <input type="text" className="input-flat" placeholder="Enter unique username" value={newAdmin.username} onChange={e => setNewAdmin({...newAdmin, username: e.target.value})} required />
+                 </div>
+                 <div>
+                   <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Secure Password</label>
+                   <input type="password" className="input-flat" placeholder="Enter password" value={newAdmin.password} onChange={e => setNewAdmin({...newAdmin, password: e.target.value})} required />
+                 </div>
+                 <button type="submit" className="btn-book" style={{ marginTop: '10px' }}>Authorize New Admin</button>
+               </form>
+             </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
 // MAIN APP COMPONENT
 // ----------------------------------------------------------------------
 
@@ -721,11 +891,17 @@ function App() {
           <div className="nav-links">
             {token ? (
               <>
-                <NavLink to="/">Book</NavLink>
-                <NavLink to="/checkin">Check-In</NavLink>
+                {token === 'mock-jwt-admin' ? (
+                  <NavLink to="/admin">Dashboard</NavLink>
+                ) : (
+                  <>
+                    <NavLink to="/">Book</NavLink>
+                    <NavLink to="/checkin">Check-In</NavLink>
+                  </>
+                )}
                 <NavLink to="/flights">Status</NavLink>
                 <NavLink to="/baggage">Baggage</NavLink>
-                <NavLink to="/profile">Profile</NavLink>
+                {token !== 'mock-jwt-admin' && <NavLink to="/profile">Profile</NavLink>}
                 <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
                   {theme === 'light' ? '☀️' : '🌙'}
                 </button>
@@ -753,8 +929,9 @@ function App() {
             <Route path="/flights" element={<FlightStatusPage />} />
             <Route path="/checkin" element={token ? <CheckInPage /> : <Navigate to="/login" />} />
             <Route path="/baggage" element={token ? <BaggageTrackingPage /> : <Navigate to="/login" />} />
-            <Route path="/profile" element={token ? <ProfilePage username={username!} /> : <Navigate to="/login" />} />
-            <Route path="/" element={token ? <BookingPage username={username!} /> : <Navigate to="/login" />} />
+            <Route path="/admin" element={token === 'mock-jwt-admin' ? <AdminDashboardPage /> : <Navigate to="/" />} />
+            <Route path="/profile" element={token && token !== 'mock-jwt-admin' ? <ProfilePage username={username!} /> : <Navigate to="/login" />} />
+            <Route path="/" element={token && token !== 'mock-jwt-admin' ? <BookingPage username={username!} /> : (token === 'mock-jwt-admin' ? <Navigate to="/admin" /> : <Navigate to="/login" />)} />
           </Routes>
         </main>
       </div>
