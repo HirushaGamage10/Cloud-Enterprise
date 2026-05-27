@@ -377,6 +377,7 @@ function BookingPage({ username }: { username: string }) {
 
 function FlightStatusPage() {
   const [flights, setFlights] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     setFlights(getFlightsDatabase());
@@ -392,6 +393,13 @@ function FlightStatusPage() {
     }
   };
 
+  const filteredFlights = flights.filter(f => 
+    searchQuery === '' || 
+    f.code.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    f.fromCity.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    f.toCity.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="inner-page-container animate-fade-up">
       <div className="inner-header">
@@ -401,12 +409,17 @@ function FlightStatusPage() {
       
       <div className="glass-panel" style={{ padding: '3rem' }}>
         <div style={{ display: 'flex', gap: '20px', marginBottom: '3rem' }}>
-          <input type="text" className="input-flat" placeholder="Search by Flight ID or City" />
-          <button className="btn-book">Search</button>
+          <input 
+            type="text" 
+            className="input-flat" 
+            placeholder="Search by Flight ID or City..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {flights.map(flight => (
+          {filteredFlights.map(flight => (
             <div key={flight.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
                 <div style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--primary)', width: '100px' }}>{flight.code}</div>
@@ -420,6 +433,11 @@ function FlightStatusPage() {
               </div>
             </div>
           ))}
+          {filteredFlights.length === 0 && (
+             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+               No flights found matching your search criteria.
+             </div>
+          )}
         </div>
       </div>
     </div>
