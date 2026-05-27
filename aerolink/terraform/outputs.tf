@@ -20,3 +20,7 @@ output "frontend_s3_url" {
 output "ecr_booking_repo" {
   value = module.ecr.booking_repo_url
 }
+
+output "github_actions_role_arn" {
+  value = module.oidc.github_actions_role_arn
+}

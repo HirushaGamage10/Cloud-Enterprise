@@ -32,3 +32,7 @@ module "frontend" {
 module "ecr" {
   source = "./modules/ecr"
 }
+
+module "oidc" {
+  source = "./modules/oidc"
+}
