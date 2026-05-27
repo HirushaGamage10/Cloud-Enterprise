@@ -813,30 +813,38 @@ function AdminDashboardPage() {
                  />
                </div>
                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                 {allBookings.filter(b => searchPnr === '' || b.pnr.toLowerCase().includes(searchPnr.toLowerCase())).map((b, i) => (
-                    <div key={i} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem', background: 'var(--bg-glass)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '15px' }}>
-                        <div>
-                          <div style={{fontWeight: 900, fontSize: '1.4rem'}}>{b.passenger}</div>
-                          <div style={{fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '5px', fontWeight: 600}}>PNR: <span style={{color: 'var(--primary)', fontWeight: 800}}>{b.pnr}</span></div>
-                        </div>
-                        <div style={{textAlign: 'right', background: 'rgba(16, 185, 129, 0.1)', padding: '10px 15px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)'}}>
-                          <div style={{fontSize: '0.85rem', fontWeight: 800, color: '#10b981'}}>Seat: {b.seat}</div>
-                          <div style={{fontSize: '0.85rem', fontWeight: 800, color: '#10b981'}}>Bag ID: {b.baggageId}</div>
-                        </div>
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                        <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>FLIGHT</span><div style={{ fontWeight: 800 }}>{b.flight.code}</div></div>
-                        <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>ROUTE</span><div style={{ fontWeight: 800 }}>{b.flight.fromCode} ➔ {b.flight.toCode}</div></div>
-                        <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>CABIN</span><div style={{ fontWeight: 800 }}>{b.cabin}</div></div>
-                        <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>DATE</span><div style={{ fontWeight: 800 }}>{b.date}</div></div>
-                      </div>
-                    </div>
-                 ))}
-                 {allBookings.filter(b => searchPnr === '' || b.pnr.toLowerCase().includes(searchPnr.toLowerCase())).length === 0 && (
+                 {searchPnr === '' ? (
                    <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                     <p style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '1.1rem' }}>No passenger bookings found for this PNR.</p>
+                     <p style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '1.1rem' }}>Enter a PNR number above to securely look up passenger check-in details.</p>
                    </div>
+                 ) : (
+                   <>
+                     {allBookings.filter(b => b.pnr.toLowerCase().includes(searchPnr.toLowerCase())).map((b, i) => (
+                        <div key={i} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem', background: 'var(--bg-glass)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '15px' }}>
+                            <div>
+                              <div style={{fontWeight: 900, fontSize: '1.4rem'}}>{b.passenger}</div>
+                              <div style={{fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '5px', fontWeight: 600}}>PNR: <span style={{color: 'var(--primary)', fontWeight: 800}}>{b.pnr}</span></div>
+                            </div>
+                            <div style={{textAlign: 'right', background: 'rgba(16, 185, 129, 0.1)', padding: '10px 15px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)'}}>
+                              <div style={{fontSize: '0.85rem', fontWeight: 800, color: '#10b981'}}>Seat: {b.seat}</div>
+                              <div style={{fontSize: '0.85rem', fontWeight: 800, color: '#10b981'}}>Bag ID: {b.baggageId}</div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                            <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>FLIGHT</span><div style={{ fontWeight: 800 }}>{b.flight.code}</div></div>
+                            <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>ROUTE</span><div style={{ fontWeight: 800 }}>{b.flight.fromCode} ➔ {b.flight.toCode}</div></div>
+                            <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>CABIN</span><div style={{ fontWeight: 800 }}>{b.cabin}</div></div>
+                            <div><span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>DATE</span><div style={{ fontWeight: 800 }}>{b.date}</div></div>
+                          </div>
+                        </div>
+                     ))}
+                     {allBookings.filter(b => b.pnr.toLowerCase().includes(searchPnr.toLowerCase())).length === 0 && (
+                       <div style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                         <p style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '1.1rem' }}>No passenger bookings found for this PNR.</p>
+                       </div>
+                     )}
+                   </>
                  )}
                </div>
              </div>
