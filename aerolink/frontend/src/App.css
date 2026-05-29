@@ -350,6 +350,42 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 6px 15px rgba(239, 68, 68, 0.3);
 }
 
+.lambda-toast {
+  margin-top: 1.5rem;
+  background: linear-gradient(135deg, rgba(255,153,0,0.1), rgba(255,153,0,0.05));
+  border: 1px solid rgba(255,153,0,0.3);
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 8px 32px rgba(255, 153, 0, 0.1);
+  animation-delay: 1.5s;
+}
+
+.lambda-icon {
+  background: rgba(255,153,0,0.2);
+  color: #ff9900;
+  padding: 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lambda-text strong {
+  display: block;
+  color: #ff9900;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.lambda-text p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
 /* Auth Cards */
 .auth-container {
   display: flex;

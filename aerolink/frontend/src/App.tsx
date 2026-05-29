@@ -367,6 +367,17 @@ function BookingPage({ username }: { username: string }) {
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>PNR</span><div style={{fontWeight:800}}>{confirmedBooking.pnr}</div></div>
               <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>BAGGAGE ID</span><div style={{fontWeight:800, color:'var(--primary)'}}>{confirmedBooking.baggageId}</div></div>
             </div>
+            
+            {/* Lambda Serverless Notification Toast */}
+            <div className="lambda-toast animate-fade-up">
+              <div className="lambda-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div className="lambda-text">
+                <strong>Serverless Event Triggered!</strong>
+                <p>AWS Lambda function automatically sent the booking confirmation email via Amazon SES.</p>
+              </div>
+            </div>
           </div>
         )}
       </div>
