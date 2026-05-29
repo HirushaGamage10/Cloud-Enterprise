@@ -38,7 +38,7 @@ resource "aws_apigatewayv2_stage" "default" {
 resource "aws_apigatewayv2_integration" "flight" {
   api_id           = aws_apigatewayv2_api.aerolink_api.id
   integration_type = "HTTP_PROXY"
-  integration_uri  = "http://a06054c5321c045a896e51f10ce86a52-749940121.eu-west-1.elb.amazonaws.com/api/v1/flights"
+  integration_uri  = "http://a00a246f368af4e5280c67a49da4976c-1599913055.eu-west-1.elb.amazonaws.com/flights"
   integration_method = "ANY"
 }
 resource "aws_apigatewayv2_route" "flight_root" {
@@ -51,7 +51,7 @@ resource "aws_apigatewayv2_route" "flight_root" {
 resource "aws_apigatewayv2_integration" "booking" {
   api_id           = aws_apigatewayv2_api.aerolink_api.id
   integration_type = "HTTP_PROXY"
-  integration_uri  = "http://a0f15be5a44084ef8a0bf90c8ca713cb-1205642314.eu-west-1.elb.amazonaws.com/api/v1/bookings"
+  integration_uri  = "http://ab7604f3a2ed545c68d4a398fe9907ce-342302779.eu-west-1.elb.amazonaws.com/bookings"
   integration_method = "ANY"
 }
 resource "aws_apigatewayv2_route" "booking_root" {
@@ -64,7 +64,7 @@ resource "aws_apigatewayv2_route" "booking_root" {
 resource "aws_apigatewayv2_integration" "baggage" {
   api_id           = aws_apigatewayv2_api.aerolink_api.id
   integration_type = "HTTP_PROXY"
-  integration_uri  = "http://afaef53307e104d23bd8b58eb7aa318b-92331643.eu-west-1.elb.amazonaws.com/api/v1/baggage"
+  integration_uri  = "http://aa634ab5645594dd685e7b82d0d28ad6-2126889744.eu-west-1.elb.amazonaws.com/baggage"
   integration_method = "ANY"
 }
 resource "aws_apigatewayv2_route" "baggage_root" {

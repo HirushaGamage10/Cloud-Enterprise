@@ -196,7 +196,7 @@ const DESTINATIONS = [
 // HOME / BOOKING PAGE
 // ----------------------------------------------------------------------
 
-const API_BASE = 'https://7ag3472kh7.execute-api.eu-west-1.amazonaws.com';
+const API_BASE = 'https://h9arp53ktb.execute-api.eu-west-1.amazonaws.com';
 
 function BookingPage({ username }: { username: string }) {
   const [flights, setFlights] = useState<any[]>([]);
@@ -215,8 +215,25 @@ function BookingPage({ username }: { username: string }) {
         const response = await fetch(`${API_BASE}/api/v1/flights`);
         if (!response.ok) throw new Error('API not available');
         const data = await response.json();
-        setFlights(data);
-        if (data.length > 0) setSelectedFlightId(data[0].id);
+        
+        // Map backend schema to frontend schema
+        const mappedData = data.map((f: any) => ({
+          id: f.flight_number,
+          code: f.flight_number,
+          fromCode: f.origin,
+          fromCity: f.origin === 'LHR' ? 'London' : f.origin === 'CDG' ? 'Paris' : f.origin,
+          toCode: f.destination,
+          toCity: f.destination === 'JFK' ? 'New York' : f.destination === 'HND' ? 'Tokyo' : f.destination,
+          duration: '8h 00m',
+          status: 'On Time',
+          gate: 'TBD',
+          time: '10:00 AM',
+          seats: f.available_seats,
+          price: f.price
+        }));
+        
+        setFlights(mappedData);
+        if (mappedData.length > 0) setSelectedFlightId(mappedData[0].id);
       } catch (err) {
         console.warn('Falling back to local database for flights');
         const dbFlights = getFlightsDatabase();
@@ -261,20 +278,21 @@ function BookingPage({ username }: { username: string }) {
       });
       if (!response.ok) throw new Error('API Booking failed');
     } catch (err) {
-      console.warn('Falling back to local database for booking');
-      const existingBookings = JSON.parse(localStorage.getItem(`bookings_${username}`) || '[]');
-      existingBookings.push(mockBooking);
-      localStorage.setItem(`bookings_${username}`, JSON.stringify(existingBookings));
-      
-      const updatedFlights = flights.map(f => {
-        if (f.id === selectedFlight.id) {
-          return { ...f, seats: f.seats > 0 ? f.seats - 1 : 0 };
-        }
-        return f;
-      });
-      localStorage.setItem('database_flights', JSON.stringify(updatedFlights));
-      setFlights(updatedFlights);
+      console.warn('API booking failed, using local database fallback message', err);
     }
+
+    const existingBookings = JSON.parse(localStorage.getItem(`bookings_${username}`) || '[]');
+    existingBookings.push(mockBooking);
+    localStorage.setItem(`bookings_${username}`, JSON.stringify(existingBookings));
+    
+    const updatedFlights = flights.map(f => {
+      if (f.id === selectedFlight.id) {
+        return { ...f, seats: f.seats > 0 ? f.seats - 1 : 0 };
+      }
+      return f;
+    });
+    localStorage.setItem('database_flights', JSON.stringify(updatedFlights));
+    setFlights(updatedFlights);
 
     setConfirmedBooking(mockBooking);
     setStatus('success');
@@ -643,11 +661,32 @@ function CheckInPage() {
 // ----------------------------------------------------------------------
 
 function ProfilePage({ username }: { username: string }) {
-  const bookingsJson = localStorage.getItem(`bookings_${username}`);
-  let myBookings = [];
-  if (bookingsJson) {
-    try { myBookings = JSON.parse(bookingsJson); } catch (e) {}
-  }
+  const [myBookings, setMyBookings] = useState<any[]>(() => {
+    const bookingsJson = localStorage.getItem(`bookings_${username}`);
+    if (bookingsJson) {
+      try { return JSON.parse(bookingsJson); } catch (e) {}
+    }
+    return [];
+  });
+
+  const handleCancelBooking = (pnr: string, flightId: string) => {
+    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+
+    // 1. Filter out the canceled booking
+    const updatedBookings = myBookings.filter((b: any) => b.pnr !== pnr);
+    setMyBookings(updatedBookings);
+    localStorage.setItem(`bookings_${username}`, JSON.stringify(updatedBookings));
+
+    // 2. Increment the seats of the flight in local storage database
+    const dbFlights = JSON.parse(localStorage.getItem('database_flights') || '[]');
+    const updatedFlights = dbFlights.map((f: any) => {
+      if (f.id === flightId) {
+        return { ...f, seats: f.seats + 1 };
+      }
+      return f;
+    });
+    localStorage.setItem('database_flights', JSON.stringify(updatedFlights));
+  };
 
   return (
     <div className="inner-page-container animate-fade-up">
@@ -693,7 +732,15 @@ function ProfilePage({ username }: { username: string }) {
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', fontWeight: 600 }}>{b.date} &nbsp;•&nbsp; {b.flight.code} &nbsp;•&nbsp; PNR: <span style={{ color: 'var(--primary)' }}>{b.pnr}</span></div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px', fontWeight: 700 }}>Baggage ID: <span style={{ color: 'var(--text-main)' }}>{b.baggageId || `BAG-${b.pnr}`}</span></div>
                   </div>
-                  <Link to="/baggage"><button className="btn-book" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>Track Bags</button></Link>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <Link to="/baggage"><button className="btn-book" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>Track Bags</button></Link>
+                    <button 
+                      className="btn-cancel" 
+                      onClick={() => handleCancelBooking(b.pnr, b.flight.id)}
+                    >
+                      Cancel Trip
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
