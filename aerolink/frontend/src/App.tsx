@@ -735,53 +735,135 @@ function ProfilePage({ username }: { username: string }) {
               <Link to="/"><button className="btn-book" style={{ marginTop: '20px' }}>Book a Flight</button></Link>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               {myBookings.map((b: any, index: number) => (
-                <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', background: 'var(--bg-panel)', boxShadow: 'var(--shadow)', transition: 'transform 0.2s ease' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                    <div style={{ flex: '1 1 min-content' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                        <span style={{ padding: '4px 10px', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.5px' }}>UPCOMING</span>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>{b.date}</span>
+                <div key={index} style={{ 
+                  display: 'flex', 
+                  flexDirection: 'row', 
+                  background: 'var(--bg-panel)', 
+                  borderRadius: '16px', 
+                  border: '1px solid var(--border)', 
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.05)', 
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  
+                  {/* Left Side (Main Ticket) */}
+                  <div style={{ flex: '1', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border)', paddingBottom: '1rem' }}>
+                      <span style={{ fontWeight: 900, color: 'var(--primary)', letterSpacing: '3px', fontSize: '1.2rem' }}>AEROLINK</span>
+                      <span style={{ padding: '4px 10px', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800 }}>UPCOMING FLIGHT</span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--text-main)', lineHeight: 1 }}>{b.flight.fromCode}</div>
+                        <div style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{b.flight.fromCity}</div>
                       </div>
-                      <div style={{ fontWeight: 900, fontSize: '1.6rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                        {b.flight.fromCity} 
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary)' }}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                        {b.flight.toCity}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, padding: '0 2rem' }}>
+                        <span style={{ fontSize: '1.5rem', color: 'var(--primary)' }}>✈️</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', borderTop: '2px dashed var(--border)', width: '100%', textAlign: 'center', marginTop: '10px', paddingTop: '10px' }}>
+                          {b.flight.duration}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', gap: '24px', marginTop: '16px', flexWrap: 'wrap' }}>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Flight</div>
-                          <div style={{ fontSize: '1.05rem', fontWeight: 700 }}>{b.flight.code}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>PNR</div>
-                          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--primary)' }}>{b.pnr}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Baggage ID</div>
-                          <div style={{ fontSize: '1.05rem', fontWeight: 700 }}>{b.baggageId || `BAG-${b.pnr}`}</div>
-                        </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--text-main)', lineHeight: 1 }}>{b.flight.toCode}</div>
+                        <div style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{b.flight.toCity}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginTop: '1rem' }}>
+                      <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>FLIGHT</span><div style={{fontWeight:800}}>{b.flight.code}</div></div>
+                      <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>DATE</span><div style={{fontWeight:800}}>{b.date}</div></div>
+                      <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>SEAT/GATE</span><div style={{fontWeight:800}}>{b.seat} / {b.flight.gate}</div></div>
+                      <div><span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>CLASS</span><div style={{fontWeight:800}}>{b.cabin || 'Economy'}</div></div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '0.5rem' }}>
+                      <Link to="/baggage" style={{ textDecoration: 'none' }}>
+                        <button className="btn-book" style={{ padding: '10px 20px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                          Track Bags
+                        </button>
+                      </Link>
+                      <button 
+                        className="btn-cancel" 
+                        onClick={() => handleCancelBooking(b.pnr, b.flight.id)}
+                        style={{ padding: '10px 20px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                        Cancel Flight
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right Side (Stub & Barcode) */}
+                  <div style={{ 
+                    width: '280px', 
+                    borderLeft: '2px dashed var(--border)', 
+                    padding: '2rem', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    justifyContent: 'space-between',
+                    background: 'rgba(255,255,255,0.02)'
+                  }}>
+                    <div>
+                      <div style={{ marginBottom: '1.5rem' }}>
+                        <span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>PASSENGER</span>
+                        <div style={{fontWeight:900, fontSize: '1.2rem', color: 'var(--text-main)', textTransform: 'uppercase'}}>{b.passenger}</div>
+                      </div>
+                      <div style={{ marginBottom: '1.5rem' }}>
+                        <span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>PNR NUMBER</span>
+                        <div style={{fontWeight:800, fontSize: '1.1rem', color: 'var(--primary)'}}>{b.pnr}</div>
+                      </div>
+                      <div>
+                        <span style={{fontSize:'0.75rem', fontWeight:700, color:'var(--text-muted)'}}>BAGGAGE ID</span>
+                        <div style={{fontWeight:800, fontSize: '1.1rem'}}>{b.baggageId || `BAG-${b.pnr}`}</div>
+                      </div>
+                    </div>
+                    
+                    {/* Simulated SVG Barcode */}
+                    <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+                      <svg width="100%" height="50" preserveAspectRatio="none">
+                        <rect x="0" y="0" width="4" height="50" fill="currentColor" />
+                        <rect x="6" y="0" width="2" height="50" fill="currentColor" />
+                        <rect x="12" y="0" width="6" height="50" fill="currentColor" />
+                        <rect x="22" y="0" width="2" height="50" fill="currentColor" />
+                        <rect x="28" y="0" width="8" height="50" fill="currentColor" />
+                        <rect x="40" y="0" width="2" height="50" fill="currentColor" />
+                        <rect x="46" y="0" width="4" height="50" fill="currentColor" />
+                        <rect x="54" y="0" width="6" height="50" fill="currentColor" />
+                        <rect x="64" y="0" width="2" height="50" fill="currentColor" />
+                        <rect x="70" y="0" width="8" height="50" fill="currentColor" />
+                        <rect x="82" y="0" width="4" height="50" fill="currentColor" />
+                        <rect x="90" y="0" width="2" height="50" fill="currentColor" />
+                        <rect x="96" y="0" width="6" height="50" fill="currentColor" />
+                        <rect x="106" y="0" width="2" height="50" fill="currentColor" />
+                        <rect x="112" y="0" width="4" height="50" fill="currentColor" />
+                        <rect x="120" y="0" width="8" height="50" fill="currentColor" />
+                        <rect x="132" y="0" width="2" height="50" fill="currentColor" />
+                        <rect x="138" y="0" width="6" height="50" fill="currentColor" />
+                        <rect x="148" y="0" width="4" height="50" fill="currentColor" />
+                        <rect x="156" y="0" width="2" height="50" fill="currentColor" />
+                        <rect x="162" y="0" width="8" height="50" fill="currentColor" />
+                        <rect x="174" y="0" width="4" height="50" fill="currentColor" />
+                        <rect x="182" y="0" width="6" height="50" fill="currentColor" />
+                        <rect x="192" y="0" width="2" height="50" fill="currentColor" />
+                        <rect x="198" y="0" width="8" height="50" fill="currentColor" />
+                        <rect x="210" y="0" width="2" height="50" fill="currentColor" />
+                        <rect x="216" y="0" width="6" height="50" fill="currentColor" />
+                        <rect x="226" y="0" width="4" height="50" fill="currentColor" />
+                      </svg>
+                      <div style={{ fontSize: '0.65rem', letterSpacing: '4px', marginTop: '4px', color: 'var(--text-muted)' }}>
+                        {b.pnr}{b.flight.code.replace('-', '')}
                       </div>
                     </div>
                   </div>
-                  
-                  <div style={{ display: 'flex', gap: '12px', paddingTop: '1.5rem', borderTop: '1px solid var(--border)', flexWrap: 'wrap' }}>
-                    <Link to="/baggage" style={{ textDecoration: 'none' }}>
-                      <button className="btn-book" style={{ padding: '12px 24px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                        Track Bags
-                      </button>
-                    </Link>
-                    <button 
-                      className="btn-cancel" 
-                      onClick={() => handleCancelBooking(b.pnr, b.flight.id)}
-                      style={{ padding: '12px 24px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                      Cancel Trip
-                    </button>
-                  </div>
+
+                  {/* Cutout circles for realism */}
+                  <div style={{ position: 'absolute', top: '-15px', right: '265px', width: '30px', height: '30px', borderRadius: '50%', background: 'var(--bg-main)', borderBottom: '1px solid var(--border)' }}></div>
+                  <div style={{ position: 'absolute', bottom: '-15px', right: '265px', width: '30px', height: '30px', borderRadius: '50%', background: 'var(--bg-main)', borderTop: '1px solid var(--border)' }}></div>
                 </div>
               ))}
             </div>
