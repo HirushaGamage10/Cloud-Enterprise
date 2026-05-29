@@ -36,3 +36,16 @@ module "ecr" {
 module "oidc" {
   source = "./modules/oidc"
 }
+
+module "serverless" {
+  source      = "./modules/serverless"
+  environment = var.environment
+  project     = "AeroLink"
+}
+
+module "monitoring" {
+  source           = "./modules/monitoring"
+  environment      = var.environment
+  project          = "AeroLink"
+  eks_cluster_name = module.compute.cluster_name
+}
