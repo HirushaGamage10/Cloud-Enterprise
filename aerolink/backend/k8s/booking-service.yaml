@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: booking-service
-        image: 806490632128.dkr.ecr.eu-west-1.amazonaws.com/aerolink-booking-service:0ddbbd7
+        image: 806490632128.dkr.ecr.eu-west-1.amazonaws.com/aerolink-booking-service:39dfa20
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
