@@ -726,18 +726,48 @@ function ProfilePage({ username }: { username: string }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {myBookings.map((b: any, index: number) => (
-                <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-glass)' }}>
-                  <div>
-                    <div style={{ fontWeight: 900, fontSize: '1.3rem' }}>{b.flight.fromCity} ➔ {b.flight.toCity}</div>
-                    <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', fontWeight: 600 }}>{b.date} &nbsp;•&nbsp; {b.flight.code} &nbsp;•&nbsp; PNR: <span style={{ color: 'var(--primary)' }}>{b.pnr}</span></div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px', fontWeight: 700 }}>Baggage ID: <span style={{ color: 'var(--text-main)' }}>{b.baggageId || `BAG-${b.pnr}`}</span></div>
+                <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', background: 'var(--bg-panel)', boxShadow: 'var(--shadow)', transition: 'transform 0.2s ease' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div style={{ flex: '1 1 min-content' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                        <span style={{ padding: '4px 10px', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.5px' }}>UPCOMING</span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>{b.date}</span>
+                      </div>
+                      <div style={{ fontWeight: 900, fontSize: '1.6rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                        {b.flight.fromCity} 
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary)' }}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        {b.flight.toCity}
+                      </div>
+                      <div style={{ display: 'flex', gap: '24px', marginTop: '16px', flexWrap: 'wrap' }}>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Flight</div>
+                          <div style={{ fontSize: '1.05rem', fontWeight: 700 }}>{b.flight.code}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>PNR</div>
+                          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--primary)' }}>{b.pnr}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Baggage ID</div>
+                          <div style={{ fontSize: '1.05rem', fontWeight: 700 }}>{b.baggageId || `BAG-${b.pnr}`}</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <Link to="/baggage"><button className="btn-book" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>Track Bags</button></Link>
+                  
+                  <div style={{ display: 'flex', gap: '12px', paddingTop: '1.5rem', borderTop: '1px solid var(--border)', flexWrap: 'wrap' }}>
+                    <Link to="/baggage" style={{ textDecoration: 'none' }}>
+                      <button className="btn-book" style={{ padding: '12px 24px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        Track Bags
+                      </button>
+                    </Link>
                     <button 
                       className="btn-cancel" 
                       onClick={() => handleCancelBooking(b.pnr, b.flight.id)}
+                      style={{ padding: '12px 24px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}
                     >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
                       Cancel Trip
                     </button>
                   </div>
