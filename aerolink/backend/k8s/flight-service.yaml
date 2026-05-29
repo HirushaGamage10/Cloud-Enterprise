@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: flight-service
-        image: 806490632128.dkr.ecr.eu-west-1.amazonaws.com/aerolink-flight-service:de468ef
+        image: 806490632128.dkr.ecr.eu-west-1.amazonaws.com/aerolink-flight-service:9e340b2
         ports:
         - containerPort: 8001
 ---
