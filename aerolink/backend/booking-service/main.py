@@ -204,7 +204,6 @@ def get_booking(booking_id: str, current_user: str = Depends(verify_token)):
             if not result:
                 raise HTTPException(status_code=404, detail="Booking not found")
             
-            # result is a tuple-like object in SQLAlchemy 2.0
             booking = {
                 "booking_id": result[0],
                 "passenger_name": result[1],
@@ -213,11 +212,61 @@ def get_booking(booking_id: str, current_user: str = Depends(verify_token)):
                 "booked_by": result[4]
             }
             
-            if booking["booked_by"] != current_user:
+            if booking["booked_by"] != current_user and users_db.get(current_user, {}).get("role") != "admin":
                 raise HTTPException(status_code=403, detail="Not authorized to view this booking")
             return booking
     except HTTPException:
         raise
+    except Exception as e:
+        logger.error(f"Database error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database Error")
+
+@app.delete("/bookings/{booking_id}")
+def cancel_booking(booking_id: str, current_user: str = Depends(verify_token)):
+    try:
+        with engine.connect() as conn:
+            # Check ownership
+            query = bookings_table.select().where(bookings_table.c.booking_id == booking_id)
+            result = conn.execute(query).fetchone()
+            if not result:
+                raise HTTPException(status_code=404, detail="Booking not found")
+            
+            if result[4] != current_user and users_db.get(current_user, {}).get("role") != "admin":
+                raise HTTPException(status_code=403, detail="Not authorized to cancel this booking")
+            
+            # Update status to CANCELLED
+            update_stmt = bookings_table.update().where(bookings_table.c.booking_id == booking_id).values(status="CANCELLED")
+            conn.execute(update_stmt)
+            conn.commit()
+            
+            # Optionally send Kafka event for cancellation
+            return {"booking_id": booking_id, "status": "CANCELLED", "message": "Booking cancelled successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Database error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database Error")
+
+@app.get("/admin/bookings")
+def get_all_bookings(current_user: str = Depends(verify_token)):
+    user = users_db.get(current_user)
+    if not user or user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        with engine.connect() as conn:
+            query = bookings_table.select()
+            results = conn.execute(query).fetchall()
+            bookings = []
+            for row in results:
+                bookings.append({
+                    "booking_id": row[0],
+                    "passenger_name": row[1],
+                    "flight_number": row[2],
+                    "status": row[3],
+                    "booked_by": row[4]
+                })
+            return bookings
     except Exception as e:
         logger.error(f"Database error: {str(e)}")
         raise HTTPException(status_code=500, detail="Database Error")
