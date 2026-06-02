@@ -36,7 +36,6 @@ module "ecr" {
 module "oidc" {
   source = "./modules/oidc"
 }
-
 module "serverless" {
   source      = "./modules/serverless"
   environment = var.environment
