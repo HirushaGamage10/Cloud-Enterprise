@@ -12,6 +12,9 @@ spec:
     metadata:
       labels:
         app: flight-service
+      annotations:
+        instrumentation.opentelemetry.io/inject-python: "false"
+        instrumentation.opentelemetry.io/inject: "false"
     spec:
       containers:
       - name: flight-service
