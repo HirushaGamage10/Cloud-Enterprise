@@ -1,6 +1,6 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "19.33.0"
+  version = "19.15.3"
 
   cluster_name    = "aerolink-eks-${var.environment}"
   cluster_version = "1.30"
