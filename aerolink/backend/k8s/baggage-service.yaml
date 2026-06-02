@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
       - name: baggage-service
-        image: 806490632128.dkr.ecr.eu-west-1.amazonaws.com/aerolink-baggage-service:9e340b2
+        image: 806490632128.dkr.ecr.eu-west-1.amazonaws.com/aerolink-baggage-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8002
 ---
