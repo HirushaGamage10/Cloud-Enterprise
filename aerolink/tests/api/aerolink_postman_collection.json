@@ -1,0 +1,204 @@
+{
+  "info": {
+    "name": "AeroLink Enterprise E2E API Tests",
+    "description": "Integration and API Tests for all AeroLink Microservices (Booking, Flight, Baggage)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Flight Service",
+      "item": [
+        {
+          "name": "Get All Flights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{flight_url}}/flights",
+              "protocol": "http",
+              "host": ["{{flight_url}}"],
+              "path": ["flights"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Booking Service",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"access_token\", jsonData.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "passenger",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "password123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://{{booking_url}}/auth/login",
+              "protocol": "http",
+              "host": ["{{booking_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"booking_id\", jsonData.booking_id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flight_number\": \"AL-1024\",\n  \"passenger_name\": \"Postman Test User\"\n}"
+            },
+            "url": {
+              "raw": "http://{{booking_url}}/bookings",
+              "protocol": "http",
+              "host": ["{{booking_url}}"],
+              "path": ["bookings"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Baggage Service",
+      "item": [
+        {
+          "name": "Update Baggage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"baggage_id\", jsonData.baggage_id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": \"{{booking_id}}\",\n  \"status\": \"CHECKED_IN\",\n  \"location\": \"Counter A\"\n}"
+            },
+            "url": {
+              "raw": "http://{{baggage_url}}/baggage/update",
+              "protocol": "http",
+              "host": ["{{baggage_url}}"],
+              "path": ["baggage", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Baggage Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{baggage_url}}/baggage/{{baggage_id}}",
+              "protocol": "http",
+              "host": ["{{baggage_url}}"],
+              "path": ["baggage", "{{baggage_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "flight_url",
+      "value": "a86adcf61899940c9903f3cb61add506-1427639798.eu-west-1.elb.amazonaws.com",
+      "type": "string"
+    },
+    {
+      "key": "booking_url",
+      "value": "a11a9d18900774a5fb2a27608414d622-2022026360.eu-west-1.elb.amazonaws.com",
+      "type": "string"
+    },
+    {
+      "key": "baggage_url",
+      "value": "a90537543ecc94a2f9ad3e9cb4537114-1868609064.eu-west-1.elb.amazonaws.com",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "booking_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "baggage_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
