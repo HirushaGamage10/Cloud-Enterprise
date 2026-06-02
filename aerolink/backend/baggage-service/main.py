@@ -29,5 +29,5 @@ def get_baggage_status(baggage_id: str):
     return baggage_db[baggage_id]
 
 @app.get("/health")
-def health_check():
+async def health_check():
     return {"status": "healthy"}

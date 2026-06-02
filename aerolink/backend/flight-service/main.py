@@ -135,5 +135,5 @@ def reduce_seat_http(flight_number: str):
     return {"status": "success", "message": "Seat reduction request processed (Check logs for DB status)"}
 
 @app.get("/health")
-def health_check():
+async def health_check():
     return {"status": "healthy", "database": "mock" if use_mock_db else "dynamodb", "kafka_consumer": "running"}

@@ -28,7 +28,30 @@
       "name": "2. Booking Service",
       "item": [
         {
-          "name": "Login",
+          "name": "User Registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser1\",\n  \"password\": \"testpass123\",\n  \"email\": \"testuser1@aerolink.com\"\n}"
+            },
+            "url": {
+              "raw": "http://{{booking_url}}/auth/register",
+              "protocol": "http",
+              "host": ["{{booking_url}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "User Login",
           "event": [
             {
               "listen": "test",
@@ -54,12 +77,12 @@
               "urlencoded": [
                 {
                   "key": "username",
-                  "value": "passenger",
+                  "value": "testuser1",
                   "type": "text"
                 },
                 {
                   "key": "password",
-                  "value": "password123",
+                  "value": "testpass123",
                   "type": "text"
                 }
               ]
@@ -69,6 +92,25 @@
               "protocol": "http",
               "host": ["{{booking_url}}"],
               "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://{{booking_url}}/auth/me",
+              "protocol": "http",
+              "host": ["{{booking_url}}"],
+              "path": ["auth", "me"]
             }
           },
           "response": []
@@ -101,13 +143,97 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"flight_number\": \"AL-1024\",\n  \"passenger_name\": \"Postman Test User\"\n}"
+              "raw": "{\n  \"flight_number\": \"AL-1024\",\n  \"passenger_name\": \"Test User\"\n}"
             },
             "url": {
               "raw": "http://{{booking_url}}/bookings",
               "protocol": "http",
               "host": ["{{booking_url}}"],
               "path": ["bookings"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://{{booking_url}}/bookings/{{booking_id}}",
+              "protocol": "http",
+              "host": ["{{booking_url}}"],
+              "path": ["bookings", "{{booking_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"admin_token\", jsonData.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "admin",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "admin123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://{{booking_url}}/auth/login",
+              "protocol": "http",
+              "host": ["{{booking_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin View All Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://{{booking_url}}/admin/bookings",
+              "protocol": "http",
+              "host": ["{{booking_url}}"],
+              "path": ["admin", "bookings"]
             }
           },
           "response": []
@@ -187,6 +313,11 @@
     },
     {
       "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
       "value": "",
       "type": "string"
     },

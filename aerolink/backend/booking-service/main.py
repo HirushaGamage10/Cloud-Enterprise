@@ -272,5 +272,5 @@ def get_all_bookings(current_user: str = Depends(verify_token)):
         raise HTTPException(status_code=500, detail="Database Error")
 
 @app.get("/health")
-def health_check():
+async def health_check():
     return {"status": "healthy", "database": "connected", "kafka": "ready" if kafka_producer else "fallback"}
