@@ -9,6 +9,12 @@ resource "aws_dynamodb_table" "flight_schedules" {
   }
 
   server_side_encryption { enabled = true }
+
+  # Multi-Region Deployment (Task 1 Requirement)
+  # This creates a DynamoDB Global Table that replicates data to a second region
+  replica {
+    region_name = "eu-central-1"
+  }
 }
 
 resource "aws_db_instance" "aurora_bookings" {
