@@ -58,13 +58,26 @@ class Token(BaseModel):
 class UserResponse(BaseModel):
     username: str
     email: str
+    role: str
+
+class RegisterUser(BaseModel):
+    username: str
+    password: str
+    email: str
 
 # Hardcoded user for assignment purposes
 users_db = {
     "passenger": {
         "username": "passenger",
         "password": "password123",
-        "email": "passenger@aerolink.com"
+        "email": "passenger@aerolink.com",
+        "role": "user"
+    },
+    "admin": {
+        "username": "admin",
+        "password": "admin123",
+        "email": "admin@aerolink.com",
+        "role": "admin"
     }
 }
 
@@ -135,10 +148,22 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     access_token = create_access_token(data={"sub": user["username"]}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.post("/auth/register")
+def register(user: RegisterUser):
+    if user.username in users_db:
+        raise HTTPException(status_code=400, detail="Username already registered")
+    users_db[user.username] = {
+        "username": user.username,
+        "password": user.password,
+        "email": user.email,
+        "role": "user"
+    }
+    return {"message": "User registered successfully", "username": user.username}
+
 @app.get("/auth/me", response_model=UserResponse)
 async def read_users_me(current_user: str = Depends(verify_token)):
     user = users_db.get(current_user)
-    return {"username": user["username"], "email": user["email"]}
+    return {"username": user["username"], "email": user["email"], "role": user.get("role", "user")}
 
 # --- BOOKING ENDPOINTS (PROTECTED & TRANSACTIONAL) ---
 @app.post("/bookings", response_model=BookingResponse)
