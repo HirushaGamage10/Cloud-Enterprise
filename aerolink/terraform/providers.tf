@@ -15,13 +15,14 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region = var.aws_region # Set to eu-west-1 (Ireland) for GDPR Data Locality
 
   default_tags {
     tags = {
       Environment = var.environment
       Project     = "AeroLink"
       ManagedBy   = "Terraform"
+      Compliance  = "GDPR-EU"
     }
   }
 }

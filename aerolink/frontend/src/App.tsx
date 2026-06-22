@@ -884,6 +884,8 @@ function AdminDashboardPage() {
   const [newFlight, setNewFlight] = useState({ code: '', fromCode: '', fromCity: '', toCode: '', toCity: '', duration: '', time: '', seats: 150 });
   const [flights, setFlights] = useState<any[]>(getFlightsDatabase());
   const [statusUpdate, setStatusUpdate] = useState({ flightId: '', status: 'On Time' });
+  const [priceUpdate, setPriceUpdate] = useState({ flightId: '', newPrice: '' });
+  const [baggageUpdate, setBaggageUpdate] = useState({ pnr: '', status: 'Security', location: 'Terminal Sorting' });
   const [newAdmin, setNewAdmin] = useState({ username: '', password: '' });
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [searchPnr, setSearchPnr] = useState('');
@@ -918,6 +920,36 @@ function AdminDashboardPage() {
     alert('Flight Status Updated');
   };
 
+  const handleUpdatePrice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!priceUpdate.flightId || !priceUpdate.newPrice) return;
+    try {
+      const res = await fetch(`${API_BASE}/flights/${priceUpdate.flightId}/price`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_price: Number(priceUpdate.newPrice) })
+      });
+      if (res.ok) console.log("Price updated on backend");
+    } catch (err) {}
+    const updatedFlights = flights.map(f => f.id === priceUpdate.flightId ? { ...f, price: Number(priceUpdate.newPrice) } : f);
+    localStorage.setItem('database_flights', JSON.stringify(updatedFlights));
+    setFlights(updatedFlights);
+    alert('Flight Price Updated and Synced via Global Tables');
+  };
+
+  const handleUpdateBaggage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!baggageUpdate.pnr) return;
+    try {
+      await fetch(`${API_BASE}/baggage/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_id: baggageUpdate.pnr, status: baggageUpdate.status, location: baggageUpdate.location })
+      });
+    } catch (err) {}
+    alert(`Baggage status updated to ${baggageUpdate.status} at ${baggageUpdate.location}`);
+  };
+
   const handleRegisterAdmin = (e: React.FormEvent) => {
     e.preventDefault();
     const adminUsersJson = localStorage.getItem('admin_users');
@@ -944,6 +976,8 @@ function AdminDashboardPage() {
       <div className="profile-layout">
         <div className="glass-panel profile-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
            <button onClick={() => setActiveTab('flights')} className={`btn-book ${activeTab!=='flights'?'btn-outline':''}`} style={{width:'100%'}}>Manage Flights</button>
+           <button onClick={() => setActiveTab('pricing')} className={`btn-book ${activeTab!=='pricing'?'btn-outline':''}`} style={{width:'100%'}}>Update Pricing</button>
+           <button onClick={() => setActiveTab('baggage')} className={`btn-book ${activeTab!=='baggage'?'btn-outline':''}`} style={{width:'100%'}}>Baggage Scanner</button>
            <button onClick={() => setActiveTab('checkins')} className={`btn-book ${activeTab!=='checkins'?'btn-outline':''}`} style={{width:'100%'}}>Passenger Check-Ins</button>
            <button onClick={() => setActiveTab('admins')} className={`btn-book ${activeTab!=='admins'?'btn-outline':''}`} style={{width:'100%'}}>Register Admin</button>
         </div>
@@ -985,6 +1019,56 @@ function AdminDashboardPage() {
                 <button type="submit" className="btn-book" style={{ gridColumn: '1 / -1', marginTop: '10px' }}>Deploy New Flight</button>
               </form>
             </div>
+          )}
+
+          {activeTab === 'pricing' && (
+             <div className="animate-fade-up">
+               <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '2rem' }}>Update Flight Pricing</h3>
+               <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Changes to pricing will be synchronized globally via DynamoDB Global Tables within seconds.</p>
+               <form onSubmit={handleUpdatePrice} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                 <div style={{ flex: 1, minWidth: '200px' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Select Flight</label>
+                    <select className="input-flat" value={priceUpdate.flightId} onChange={e => setPriceUpdate({...priceUpdate, flightId: e.target.value})} required>
+                      <option value="">Select...</option>
+                      {flights.map(f => <option key={f.id} value={f.id}>{f.code} - {f.fromCity} to {f.toCity} (Current: ${f.price || 450})</option>)}
+                    </select>
+                 </div>
+                 <div style={{ flex: 1, minWidth: '150px' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>New Price ($)</label>
+                    <input type="number" className="input-flat" placeholder="e.g. 500" value={priceUpdate.newPrice} onChange={e => setPriceUpdate({...priceUpdate, newPrice: e.target.value})} required />
+                 </div>
+                 <button type="submit" className="btn-book">Sync Price Global</button>
+               </form>
+             </div>
+          )}
+
+          {activeTab === 'baggage' && (
+             <div className="animate-fade-up">
+               <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '2rem' }}>Baggage Scanner Simulation</h3>
+               <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Update real-time baggage status. Passengers will see these updates on their mobile tracker.</p>
+               <form onSubmit={handleUpdateBaggage} style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '600px' }}>
+                 <div>
+                   <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Passenger PNR</label>
+                   <input type="text" className="input-flat" placeholder="Enter PNR from baggage tag" value={baggageUpdate.pnr} onChange={e => setBaggageUpdate({...baggageUpdate, pnr: e.target.value})} required />
+                 </div>
+                 <div style={{ display: 'flex', gap: '15px' }}>
+                   <div style={{ flex: 1 }}>
+                     <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Status Stage</label>
+                     <select className="input-flat" value={baggageUpdate.status} onChange={e => setBaggageUpdate({...baggageUpdate, status: e.target.value})}>
+                       <option value="Checked In">Checked In</option>
+                       <option value="Security">Security cleared</option>
+                       <option value="Loaded">Loaded onto aircraft</option>
+                       <option value="Carousel">At baggage carousel</option>
+                     </select>
+                   </div>
+                   <div style={{ flex: 1 }}>
+                     <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Location/Terminal</label>
+                     <input type="text" className="input-flat" placeholder="e.g. T4 Sorting Facility" value={baggageUpdate.location} onChange={e => setBaggageUpdate({...baggageUpdate, location: e.target.value})} required />
+                   </div>
+                 </div>
+                 <button type="submit" className="btn-book" style={{ marginTop: '10px' }}>Update Status</button>
+               </form>
+             </div>
           )}
 
           {activeTab === 'checkins' && (

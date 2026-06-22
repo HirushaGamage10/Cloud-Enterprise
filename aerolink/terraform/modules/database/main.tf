@@ -17,6 +17,23 @@ resource "aws_dynamodb_table" "flight_schedules" {
   }
 }
 
+resource "aws_dynamodb_table" "baggage_tracking" {
+  name           = "AeroLinkBaggage-${var.environment}"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "baggage_id"
+
+  attribute {
+    name = "baggage_id"
+    type = "S"
+  }
+
+  server_side_encryption { enabled = true }
+
+  replica {
+    region_name = "eu-central-1"
+  }
+}
+
 resource "aws_db_instance" "aurora_bookings" {
   identifier              = "aerolink-db-${var.environment}"
   engine                  = "postgres"

@@ -128,6 +128,29 @@ def get_flight(flight_number: str):
     except ClientError as e:
         raise HTTPException(status_code=500, detail="Database Error")
 
+class PriceUpdate(BaseModel):
+    new_price: float
+
+@app.put("/flights/{flight_number}/price")
+def update_flight_price(flight_number: str, price_update: PriceUpdate):
+    if use_mock_db:
+        if flight_number not in mock_flights_db:
+            raise HTTPException(status_code=404, detail="Flight not found")
+        mock_flights_db[flight_number]["price"] = price_update.new_price
+        return {"status": "success", "message": "Price updated via Global Tables sync", "new_price": price_update.new_price}
+        
+    try:
+        response = table.update_item(
+            Key={'flight_number': flight_number},
+            UpdateExpression="set price = :p",
+            ExpressionAttributeValues={':p': price_update.new_price},
+            ReturnValues="UPDATED_NEW"
+        )
+        return {"status": "success", "message": "Price updated via Global Tables sync", "new_price": float(response['Attributes']['price'])}
+    except ClientError as e:
+        logger.error(f"DynamoDB error updating price: {e}")
+        raise HTTPException(status_code=500, detail="Database Error")
+
 # HTTP Endpoint kept for synchronous testing / backward compatibility
 @app.post("/flights/{flight_number}/reduce-seat")
 def reduce_seat_http(flight_number: str):

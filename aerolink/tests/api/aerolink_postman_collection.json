@@ -1,13 +1,26 @@
 {
   "info": {
-    "name": "AeroLink Enterprise E2E API Tests",
-    "description": "Integration and API Tests for all AeroLink Microservices (Booking, Flight, Baggage)",
+    "name": "AeroLink Enterprise API Master Collection",
+    "description": "Complete Integration and API Tests for all AeroLink Microservices (Booking, Flight, Baggage), including all endpoints.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "1. Flight Service",
       "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{flight_url}}/health",
+              "protocol": "http",
+              "host": ["{{flight_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
         {
           "name": "Get All Flights",
           "request": {
@@ -19,14 +32,52 @@
               "host": ["{{flight_url}}"],
               "path": ["flights"]
             }
-          },
-          "response": []
+          }
+        },
+        {
+          "name": "Get Specific Flight",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{flight_url}}/flights/AL-1024",
+              "protocol": "http",
+              "host": ["{{flight_url}}"],
+              "path": ["flights", "AL-1024"]
+            }
+          }
+        },
+        {
+          "name": "Manual Reduce Seat",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://{{flight_url}}/flights/AL-1024/reduce-seat",
+              "protocol": "http",
+              "host": ["{{flight_url}}"],
+              "path": ["flights", "AL-1024", "reduce-seat"]
+            }
+          }
         }
       ]
     },
     {
       "name": "2. Booking Service",
       "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{booking_url}}/health",
+              "protocol": "http",
+              "host": ["{{booking_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
         {
           "name": "User Registration",
           "request": {
@@ -47,8 +98,7 @@
               "host": ["{{booking_url}}"],
               "path": ["auth", "register"]
             }
-          },
-          "response": []
+          }
         },
         {
           "name": "User Login",
@@ -93,8 +143,7 @@
               "host": ["{{booking_url}}"],
               "path": ["auth", "login"]
             }
-          },
-          "response": []
+          }
         },
         {
           "name": "Get User Profile",
@@ -112,8 +161,7 @@
               "host": ["{{booking_url}}"],
               "path": ["auth", "me"]
             }
-          },
-          "response": []
+          }
         },
         {
           "name": "Create Booking",
@@ -151,8 +199,25 @@
               "host": ["{{booking_url}}"],
               "path": ["bookings"]
             }
-          },
-          "response": []
+          }
+        },
+        {
+          "name": "Get Specific Booking",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://{{booking_url}}/bookings/{{booking_id}}",
+              "protocol": "http",
+              "host": ["{{booking_url}}"],
+              "path": ["bookings", "{{booking_id}}"]
+            }
+          }
         },
         {
           "name": "Cancel Booking",
@@ -170,8 +235,7 @@
               "host": ["{{booking_url}}"],
               "path": ["bookings", "{{booking_id}}"]
             }
-          },
-          "response": []
+          }
         },
         {
           "name": "Admin Login",
@@ -216,8 +280,7 @@
               "host": ["{{booking_url}}"],
               "path": ["auth", "login"]
             }
-          },
-          "response": []
+          }
         },
         {
           "name": "Admin View All Bookings",
@@ -235,14 +298,26 @@
               "host": ["{{booking_url}}"],
               "path": ["admin", "bookings"]
             }
-          },
-          "response": []
+          }
         }
       ]
     },
     {
       "name": "3. Baggage Service",
       "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{baggage_url}}/health",
+              "protocol": "http",
+              "host": ["{{baggage_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
         {
           "name": "Update Baggage",
           "event": [
@@ -275,8 +350,7 @@
               "host": ["{{baggage_url}}"],
               "path": ["baggage", "update"]
             }
-          },
-          "response": []
+          }
         },
         {
           "name": "Get Baggage Status",
@@ -289,8 +363,7 @@
               "host": ["{{baggage_url}}"],
               "path": ["baggage", "{{baggage_id}}"]
             }
-          },
-          "response": []
+          }
         }
       ]
     }
