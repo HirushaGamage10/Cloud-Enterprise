@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: booking-service
-        image: 806490632128.dkr.ecr.eu-west-1.amazonaws.com/aerolink-booking-service:b8021b6
+        image: 806490632128.dkr.ecr.eu-west-1.amazonaws.com/aerolink-booking-service:18a2c2a
         imagePullPolicy: Always
         env:
         - name: KAFKA_BROKER_URL

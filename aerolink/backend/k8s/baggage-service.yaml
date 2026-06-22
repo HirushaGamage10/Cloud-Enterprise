@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: baggage-service
-        image: 806490632128.dkr.ecr.eu-west-1.amazonaws.com/aerolink-baggage-service:b8021b6
+        image: 806490632128.dkr.ecr.eu-west-1.amazonaws.com/aerolink-baggage-service:18a2c2a
         imagePullPolicy: Always
         env:
         - name: KAFKA_BROKER_URL
